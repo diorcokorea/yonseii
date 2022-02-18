@@ -3,7 +3,6 @@ import "./App.css";
 import Header from "./components/header";
 import ControlPanel from "./components/controlPanel";
 import Sidebar from "./components/sidebar";
-import Konva from "./components/konva";
 import KonvaAdd from "./components/konvaAdd";
 import { Layout } from "antd";
 
@@ -13,7 +12,7 @@ function App() {
   const [imgurl, setImgurl] = useState("");
   const [posidata, setPosidata] = useState("");
 
-  const geturl = (url) => {
+  const getImgurl = (url) => {
     console.log(url);
     setImgurl(url);
   };
@@ -32,9 +31,9 @@ function App() {
             <Sidebar imgurl={imgurl} />
           </Sider>
           <Content>
-            <ControlPanel imgurl={geturl} returndata={returndata} />
+            <ControlPanel passImgurl={getImgurl} returndata={returndata} />
             {/* <Konva posidata={posidata} /> */}
-            <KonvaAdd posidata={posidata} />
+            <KonvaAdd posidata={posidata} imgurl={imgurl} />
           </Content>
         </Layout>
         <Footer>Footer</Footer>
