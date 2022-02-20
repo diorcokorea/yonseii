@@ -13,6 +13,7 @@ body {
 
 .sidebar:hover {
   border: "solid 3px yellow";
+  background-color: "grey";
   width: "120%";
 }
 .menutop {

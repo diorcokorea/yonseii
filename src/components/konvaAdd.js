@@ -62,30 +62,34 @@ const DrawAnnotations = (props) => {
 
       setAnnotationsToDraw(rdata);
     }
+    if (stageRef.current) resizeStage(stageRef.current, scale);
+  }, [posi, originurl, scale]);
 
+  useEffect(() => {
     window.addEventListener("click", () => {
-      // hide menu
       setShow(false);
     });
     window.addEventListener("keydown", () => {
       setIsdraggable(false);
     });
-
     window.addEventListener("keyup", () => {
       setIsdraggable(true);
     });
-
-    //console.log(scale, stageRef.current);
+  }, []);
+  useEffect(() => {
+    console.log("annotation chg");
     if (stageRef.current) {
-      //resizeStage(stageRef.current, scale);
       makeThumbImage();
+      console.log("makeThumbImg");
     }
-  }, [posi, originurl, scale]);
+  }, [annotations]);
+  const makeThumbImage = async () => {
+    // Create the Konva.Image() and add it to the stage
 
-  const makeThumbImage = () => {
-    var dataURL = stageRef.current.toDataURL();
+    var dataURL = await stageRef.current.toDataURL();
+    console.log(stageRef.current, "dataURL", dataURL);
+
     dispatch(globalVariable({ thumbimg: dataURL }));
-    console.log(dataURL);
   };
   //#region contextmenu
   const handleContextMenu = (e) => {
@@ -115,7 +119,7 @@ const DrawAnnotations = (props) => {
 
   //#region  mouse drag
   const handleMouseDown = (event) => {
-    if (event.evt.button === 2) return;
+    if ((event.evt.button === 2) | isdraggable) return;
     if (newAnnotation.length === 0) {
       const { x, y } = event.target.getStage().getRelativePointerPosition();
       setNewAnnotation([{ x, y, width: 0, height: 0, key: "0" }]);
@@ -123,7 +127,7 @@ const DrawAnnotations = (props) => {
   };
 
   const handleMouseUp = (event) => {
-    if (event.evt.button === 2) return;
+    if ((event.evt.button === 2) | isdraggable) return;
     if (newAnnotation.length === 1) {
       const sx = newAnnotation[0].x;
       const sy = newAnnotation[0].y;
@@ -142,6 +146,13 @@ const DrawAnnotations = (props) => {
       setAnnotations(annotations);
 
       setAnnotationsToDraw([...annotations, ...newAnnotation]);
+      var dataURL = event.target.getStage().toDataURL({
+        mimeType: "image/jpeg",
+        quality: 0,
+        pixelRatio: 2,
+      });
+      console.log(event.target.getStage(), "dataURL", dataURL);
+
       //   //selection
       //   const stage = event.target.getStage();
       //   var shapes = stage.find(".rect");
@@ -154,7 +165,7 @@ const DrawAnnotations = (props) => {
   };
 
   const handleMouseMove = (event) => {
-    if (event.evt.button === 2) return;
+    if ((event.evt.button === 2) | isdraggable) return;
     if (newAnnotation.length === 1) {
       const sx = newAnnotation[0].x;
       const sy = newAnnotation[0].y;
@@ -186,9 +197,11 @@ const DrawAnnotations = (props) => {
   //#region
   var scaleBy = 1.1;
   const resizeStage = (stage, scaleinfo, deltaY) => {
+    if (!stage) return;
     var oldScale = stage.scaleX();
 
     var pointer = stage.getPointerPosition();
+    if (!pointer) return;
     var center = {
       x: stage.width() / 2,
       y: stage.height() / 2,
@@ -217,7 +230,6 @@ const DrawAnnotations = (props) => {
     //   y: center.y - relatedTo.y * newScale,
     // };
 
-    console.log(oldScale * 30, newScale * 30);
     stage.position(newPos);
     stage.batchDraw();
     return newScale;
@@ -226,7 +238,7 @@ const DrawAnnotations = (props) => {
     const stage = e.target.getStage();
     e.evt.preventDefault();
     const newScale = resizeStage(stage, null, e.evt.deltaY);
-    dispatch(globalVariable({ scale: parseInt(newScale * 30) }));
+    //dispatch(globalVariable({ scale: parseInt(newScale * 30) }));
   };
 
   //#endregion
@@ -263,6 +275,8 @@ const DrawAnnotations = (props) => {
           <Rect fill="rgba(0,0,255,0.5)" visible={false} />
         </Layer>
       </Stage>
+      <button onClick={makeThumbImage}>click</button>
+      <button onClick={() => console.log(isdraggable)}>isdraggable</button>
       {show && (
         <ContextMenu position={anchorPoint} contextClick={contextClick} />
       )}

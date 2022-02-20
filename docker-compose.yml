@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yonseireact
+    image: diocokorea/yonseireact
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "3002:80"

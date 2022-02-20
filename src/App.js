@@ -5,6 +5,7 @@ import ControlPanel from "./components/controlPanel";
 import Sidebar from "./components/sidebar";
 import KonvaAdd from "./components/konvaAdd";
 import { Layout } from "antd";
+import "antd/dist/antd.css";
 
 const { Footer, Sider, Content } = Layout;
 
