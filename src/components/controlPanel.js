@@ -44,8 +44,13 @@ const ImageForm = ({ passImgurl, returndata }) => {
     }
 
     axios.post("http://localhost:3000/fileupload", data).then((res) => {
-      passImgurl(`http://localhost:3000/media/${res.data.filename[0]}`);
-      setImgfile(`http://localhost:3000/media/${res.data.filename[0]}`);
+      dispatch(
+        globalVariable({
+          originurl: `http://localhost:3000/media/${res.data.filename[0]}`,
+        })
+      );
+      // passImgurl(`http://localhost:3000/media/${res.data.filename[0]}`);
+      // setImgfile(`http://localhost:3000/media/${res.data.filename[0]}`);
       setImgname(res.data.filename[0]);
     });
   };
@@ -89,7 +94,8 @@ const ImageForm = ({ passImgurl, returndata }) => {
           setIsnormal(true);
           setIsab(true);
 
-          returndata(result_json.results);
+          //returndata(result_json.results);
+          dispatch(globalVariable({ position: result_json.results }));
         } else {
           let message = "success error : " + obj.reason;
           console.log(message);

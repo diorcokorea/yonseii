@@ -9,18 +9,6 @@ import { Layout } from "antd";
 const { Footer, Sider, Content } = Layout;
 
 function App() {
-  const [imgurl, setImgurl] = useState("");
-  const [posidata, setPosidata] = useState("");
-
-  const getImgurl = (url) => {
-    console.log(url);
-    setImgurl(url);
-  };
-  const returndata = (data) => {
-    console.log(data);
-    setPosidata(data);
-  };
-  console.log("from app", posidata);
   return (
     <div className="App">
       <Layout>
@@ -28,12 +16,11 @@ function App() {
 
         <Layout>
           <Sider>
-            <Sidebar imgurl={imgurl} />
+            <Sidebar />
           </Sider>
           <Content>
-            <ControlPanel passImgurl={getImgurl} returndata={returndata} />
-            {/* <Konva posidata={posidata} /> */}
-            <KonvaAdd posidata={posidata} imgurl={imgurl} />
+            <ControlPanel />
+            <KonvaAdd />
           </Content>
         </Layout>
         <Footer>Footer</Footer>

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
 import { Stage, Layer, Transformer, Rect, Image } from "react-konva";
-import $ from "jquery";
 import ContextMenu from "./contextmenu";
 import useImage from "use-image";
 
@@ -43,24 +42,27 @@ const DrawAnnotations = (props) => {
   const dispatch = useDispatch();
   //dispatch(globalVariable({ display: "list" }));
   const scale = useSelector((state) => state.global.scale);
+  const posi = useSelector((state) => state.global.position);
+  const originurl = useSelector((state) => state.global.originurl);
   const stageRef = React.useRef(null);
 
   const [annotations, setAnnotations] = useState([]);
   const [newAnnotation, setNewAnnotation] = useState([]);
+  const [annotationsToDraw, setAnnotationsToDraw] = useState([]);
   const [show, setShow] = useState(false);
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
   const [imgurl, setImgurl] = useState();
   const [isdraggable, setIsdraggable] = useState(true);
 
   useEffect(() => {
-    if (props.posidata) {
-      const rdata = addRect(props.posidata);
+    if (posi) {
+      const rdata = addRect(posi);
 
       setAnnotations(rdata);
+
+      setAnnotationsToDraw(rdata);
     }
-    if (props.imgurl) {
-      setImgurl(props.imgurl);
-    }
+
     window.addEventListener("click", () => {
       // hide menu
       setShow(false);
@@ -72,8 +74,19 @@ const DrawAnnotations = (props) => {
     window.addEventListener("keyup", () => {
       setIsdraggable(true);
     });
-  }, [props.posidata, props.imgurl]);
 
+    //console.log(scale, stageRef.current);
+    if (stageRef.current) {
+      //resizeStage(stageRef.current, scale);
+      makeThumbImage();
+    }
+  }, [posi, originurl, scale]);
+
+  const makeThumbImage = () => {
+    var dataURL = stageRef.current.toDataURL();
+    dispatch(globalVariable({ thumbimg: dataURL }));
+    console.log(dataURL);
+  };
   //#region contextmenu
   const handleContextMenu = (e) => {
     e.evt.preventDefault(true); // NB!!!! Remember the ***TRUE***
@@ -128,6 +141,7 @@ const DrawAnnotations = (props) => {
       if ((x - sx < 5) | (y - sy < 5)) return;
       setAnnotations(annotations);
 
+      setAnnotationsToDraw([...annotations, ...newAnnotation]);
       //   //selection
       //   const stage = event.target.getStage();
       //   var shapes = stage.find(".rect");
@@ -154,37 +168,56 @@ const DrawAnnotations = (props) => {
           key: "0",
         },
       ]);
+
+      setAnnotationsToDraw([
+        ...annotations,
+        {
+          x: sx,
+          y: sy,
+          width: x - sx,
+          height: y - sy,
+          key: "0",
+        },
+      ]);
     }
   };
   //#endregion
 
   //#region
   var scaleBy = 1.1;
-  const resizeStage = (stage, scaleinfo) => {
-    if (!stage) stage = stageRef.current;
-
+  const resizeStage = (stage, scaleinfo, deltaY) => {
     var oldScale = stage.scaleX();
 
     var pointer = stage.getPointerPosition();
+    var center = {
+      x: stage.width() / 2,
+      y: stage.height() / 2,
+    };
 
     var mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-    var newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+    var newScale;
 
+    if (scaleinfo) newScale = scaleinfo / 30;
+    else newScale = deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
     stage.scale({
       x: newScale,
       y: newScale,
     });
-    console.log(oldScale, newScale);
 
     var newPos = {
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
     };
+    // var newPos = {
+    //   x: center.x - relatedTo.x * newScale,
+    //   y: center.y - relatedTo.y * newScale,
+    // };
 
+    console.log(oldScale * 30, newScale * 30);
     stage.position(newPos);
     stage.batchDraw();
     return newScale;
@@ -192,12 +225,13 @@ const DrawAnnotations = (props) => {
   const handleWheel = (e) => {
     const stage = e.target.getStage();
     e.evt.preventDefault();
-    const newScale = resizeStage(stage);
+    const newScale = resizeStage(stage, null, e.evt.deltaY);
     dispatch(globalVariable({ scale: parseInt(newScale * 30) }));
   };
+
   //#endregion
 
-  const annotationsToDraw = [...annotations, ...newAnnotation];
+  //const annotationsToDraw = [...annotations, ...newAnnotation];
   return (
     <>
       <Stage
@@ -211,7 +245,7 @@ const DrawAnnotations = (props) => {
         ref={stageRef}
       >
         <Layer>
-          <LionImage imgurl={imgurl} />
+          <LionImage imgurl={originurl} />
           {annotationsToDraw.map((value) => {
             return (
               <Rect

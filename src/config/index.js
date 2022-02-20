@@ -1,9 +1,9 @@
 const globalVar = {
   scale: 0,
   showSpin: false,
-  sortAction: false,
-  searchWord: {},
-  tabIndex: {},
+  thumgimg: "",
+  originurl: "",
+  position: null,
   visiblebtn: false,
   graphclick: {},
   logicArr: [],
