@@ -208,54 +208,54 @@ const ImageForm = () => {
       // }
       {
         image: thumbimg,
-        filepath: "안정형.jpg",
-        classification: "stable",
-        result_json:
-          '{"results":[{"position" : [485, 115, 556, 144], "class" : 1},\r\n' +
-          '{"position" : [688, 173, 720, 224], "class" : 1},\r\n' +
-          '{"position" : [706, 228, 738, 299], "class" : 1},\r\n' +
-          '{"position" : [663, 265, 704, 308], "class" : 1},\r\n' +
-          '{"position" : [752, 246, 800, 283], "class" : 1},\r\n' +
-          '{"position" : [738, 276, 784, 309], "class" : 1},\r\n' +
-          '{"position" : [805, 277, 830, 314], "class" : 2},\r\n' +
-          '{"position" : [841, 265, 874, 303], "class" : 1},\r\n' +
-          '{"position" : [614, 293, 651, 327], "class" : 1},\r\n' +
-          '{"position" : [443, 348, 506, 392], "class" : 1},\r\n' +
-          '{"position" : [499, 397, 530, 430], "class" : 1},\r\n' +
-          '{"position" : [537, 397, 585, 435], "class" : 1},\r\n' +
-          '{"position" : [529, 435, 556, 458], "class" : 1},\r\n' +
-          '{"position" : [550, 349, 585, 388], "class" : 2},\r\n' +
-          '{"position" : [597, 343, 619, 365], "class" : 1},\r\n' +
-          '{"position" : [615, 358, 650, 388], "class" : 1},\r\n' +
-          '{"position" : [646, 384, 673, 409], "class" : 1},\r\n' +
-          '{"position" : [784, 363, 826, 397], "class" : 1},\r\n' +
-          '{"position" : [771, 392, 796, 415], "class" : 1},\r\n' +
-          '{"position" : [801, 397, 846, 435], "class" : 1},\r\n' +
-          '{"position" : [788, 415, 818, 447], "class" : 1},\r\n' +
-          '{"position" : [781, 452, 804, 477], "class" : 2},\r\n' +
-          '{"position" : [379, 436, 410, 485], "class" : 1},\r\n' +
-          '{"position" : [409, 447, 444, 504], "class" : 1},\r\n' +
-          '{"position" : [378, 500, 408, 522], "class" : 1},\r\n' +
-          '{"position" : [383, 526, 422, 553], "class" : 1},\r\n' +
-          '{"position" : [418, 511, 447, 541], "class" : 1},\r\n' +
-          '{"position" : [501, 533, 537, 571], "class" : 1},\r\n' +
-          '{"position" : [529, 523, 557, 545], "class" : 1},\r\n' +
-          '{"position" : [537, 572, 590, 599], "class" : 1},\r\n' +
-          '{"position" : [518, 602, 570, 629], "class" : 2},\r\n' +
-          '{"position" : [496, 626, 518, 652], "class" : 1},\r\n' +
-          '{"position" : [609, 633, 638, 657], "class" : 1},\r\n' +
-          '{"position" : [573, 472, 634, 534], "class" : 1},\r\n' +
-          '{"position" : [597, 525, 645, 560], "class" : 1},\r\n' +
-          '{"position" : [633, 561, 656, 586], "class" : 1},\r\n' +
-          '{"position" : [651, 572, 679, 604], "class" : 1},\r\n' +
-          '{"position" : [653, 598, 696, 632], "class" : 1},\r\n' +
-          '{"position" : [683, 570, 725, 595], "class" : 1},\r\n' +
-          '{"position" : [656, 522, 680, 541], "class" : 1},\r\n' +
-          '{"position" : [683, 527, 715, 563], "class" : 1},\r\n' +
-          '{"position" : [711, 527, 752, 572], "class" : 2},\r\n' +
-          '{"position" : [664, 459, 721, 522], "class" : 2},\r\n' +
-          '{"position" : [620, 397, 649, 429], "class" : 1}]}\r\n' +
-          "\r\n",
+        filepath: imgname,
+        classification: readtype, //"stable",
+        result_json: JSON.stringify({ results: position }),
+        // '{"results":[{"position" : [485, 115, 556, 144], "class" : 1},\r\n' +
+        // '{"position" : [688, 173, 720, 224], "class" : 1},\r\n' +
+        // '{"position" : [706, 228, 738, 299], "class" : 1},\r\n' +
+        // '{"position" : [663, 265, 704, 308], "class" : 1},\r\n' +
+        // '{"position" : [752, 246, 800, 283], "class" : 1},\r\n' +
+        // '{"position" : [738, 276, 784, 309], "class" : 1},\r\n' +
+        // '{"position" : [805, 277, 830, 314], "class" : 2},\r\n' +
+        // '{"position" : [841, 265, 874, 303], "class" : 1},\r\n' +
+        // '{"position" : [614, 293, 651, 327], "class" : 1},\r\n' +
+        // '{"position" : [443, 348, 506, 392], "class" : 1},\r\n' +
+        // '{"position" : [499, 397, 530, 430], "class" : 1},\r\n' +
+        // '{"position" : [537, 397, 585, 435], "class" : 1},\r\n' +
+        // '{"position" : [529, 435, 556, 458], "class" : 1},\r\n' +
+        // '{"position" : [550, 349, 585, 388], "class" : 2},\r\n' +
+        // '{"position" : [597, 343, 619, 365], "class" : 1},\r\n' +
+        // '{"position" : [615, 358, 650, 388], "class" : 1},\r\n' +
+        // '{"position" : [646, 384, 673, 409], "class" : 1},\r\n' +
+        // '{"position" : [784, 363, 826, 397], "class" : 1},\r\n' +
+        // '{"position" : [771, 392, 796, 415], "class" : 1},\r\n' +
+        // '{"position" : [801, 397, 846, 435], "class" : 1},\r\n' +
+        // '{"position" : [788, 415, 818, 447], "class" : 1},\r\n' +
+        // '{"position" : [781, 452, 804, 477], "class" : 2},\r\n' +
+        // '{"position" : [379, 436, 410, 485], "class" : 1},\r\n' +
+        // '{"position" : [409, 447, 444, 504], "class" : 1},\r\n' +
+        // '{"position" : [378, 500, 408, 522], "class" : 1},\r\n' +
+        // '{"position" : [383, 526, 422, 553], "class" : 1},\r\n' +
+        // '{"position" : [418, 511, 447, 541], "class" : 1},\r\n' +
+        // '{"position" : [501, 533, 537, 571], "class" : 1},\r\n' +
+        // '{"position" : [529, 523, 557, 545], "class" : 1},\r\n' +
+        // '{"position" : [537, 572, 590, 599], "class" : 1},\r\n' +
+        // '{"position" : [518, 602, 570, 629], "class" : 2},\r\n' +
+        // '{"position" : [496, 626, 518, 652], "class" : 1},\r\n' +
+        // '{"position" : [609, 633, 638, 657], "class" : 1},\r\n' +
+        // '{"position" : [573, 472, 634, 534], "class" : 1},\r\n' +
+        // '{"position" : [597, 525, 645, 560], "class" : 1},\r\n' +
+        // '{"position" : [633, 561, 656, 586], "class" : 1},\r\n' +
+        // '{"position" : [651, 572, 679, 604], "class" : 1},\r\n' +
+        // '{"position" : [653, 598, 696, 632], "class" : 1},\r\n' +
+        // '{"position" : [683, 570, 725, 595], "class" : 1},\r\n' +
+        // '{"position" : [656, 522, 680, 541], "class" : 1},\r\n' +
+        // '{"position" : [683, 527, 715, 563], "class" : 1},\r\n' +
+        // '{"position" : [711, 527, 752, 572], "class" : 2},\r\n' +
+        // '{"position" : [664, 459, 721, 522], "class" : 2},\r\n' +
+        // '{"position" : [620, 397, 649, 429], "class" : 1}]}\r\n' +
+        // "\r\n",
         id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
       }
     );
