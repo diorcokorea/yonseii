@@ -87,13 +87,22 @@ const DrawAnnotations = (props) => {
       makeThumbImage();
     }
   }, [posi, originurl, drawtype]);
-
+  // useEffect(() => {
+  //   if (show) {
+  //     const obj = _.find(annotationsToDraw, { class: 3 });
+  //     currentShape = stageRef.current.find("#" + obj.id)[0];
+  //     console.log(currentShape);
+  //   }
+  // }, [show]);
   useEffect(() => {
     if (stageRef.current) resizeStage(stageRef.current, scale);
   }, [scale]);
   useEffect(() => {
-    window.addEventListener("click", (e) => {
+    stageRef.current.on("click", (e) => {
       setShow(false);
+      if (e.target.attrs.name === "rect") {
+        selectRect(e);
+      } else setFillcolor(null);
     });
   }, []);
   useEffect(() => {
@@ -139,9 +148,13 @@ const DrawAnnotations = (props) => {
     const stage = e.target.getStage();
     currentShape = e.target;
     //dispatch(globalVariable({ currentShape: e.target }));
+    // setAnchorPoint({
+    //   x: stage.getPointerPosition().x + 220,
+    //   y: stage.getPointerPosition().y + 220,
+    // });
     setAnchorPoint({
-      x: stage.getPointerPosition().x + 220,
-      y: stage.getPointerPosition().y + 220,
+      x: mousePosition.x + 220,
+      y: mousePosition.y + 220,
     });
     setShow(true);
   };
@@ -202,9 +215,14 @@ const DrawAnnotations = (props) => {
       //setAnnotationsToDraw(filteredAnnotations);
 
       const newPosition = AnnotationToPosition([...annotations]);
-      console.log(newPosition);
+
       dispatch(globalVariable({ draggable: true }));
       dispatch(globalVariable({ position: newPosition }));
+      // setAnchorPoint({
+      //   x: sx + x,
+      //   y: sy + y,
+      // });
+      // setShow(true);
       //   var dataURL = event.target.getStage().toDataURL({
       //     mimeType: "image/jpeg",
       //     quality: 0,
@@ -277,7 +295,6 @@ const DrawAnnotations = (props) => {
       x: stage.width() / 2,
       y: stage.height() / 2,
     };
-
     var mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
@@ -296,6 +313,19 @@ const DrawAnnotations = (props) => {
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
     };
+
+    console.log(
+      "oldscale",
+      oldScale,
+      "newscale",
+      newScale,
+      "pointer",
+      pointer,
+      "mousePointTo",
+      mousePointTo,
+      "center",
+      center
+    );
     // var newPos = {
     //   x: center.x - relatedTo.x * newScale,
     //   y: center.y - relatedTo.y * newScale,
@@ -322,19 +352,16 @@ const DrawAnnotations = (props) => {
     localStorage.setItem("annotation", JSON.stringify(annotationsToDraw));
     setFillcolor(e.target.attrs.x);
   };
-  const reload = () => {
-    stageRef.current.batchDraw();
-  };
 
   return (
     <>
-      <button onClick={makeThumbImage}>click</button>
+      {/* <button onClick={makeThumbImage}>click</button>
       <button onClick={() => console.log("draggable", draggable)}>
         draggable
       </button>
       <button onClick={() => console.log(currentShape)}>currentShape</button>
       <button onClick={() => console.log(fillcolor)}>fillcolor</button>
-      <button onClick={reload}>reload</button>
+      <button onClick={reload}>reload</button> */}
       <Stage
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -344,28 +371,33 @@ const DrawAnnotations = (props) => {
         height={window.innerHeight}
         draggable={draggable}
         ref={stageRef}
+        style={{ border: "solid 1px black" }}
       >
         <Layer>
-          <LionImage imgurl={originimg} />
-          {annotationsToDraw &&
-            annotationsToDraw.map((value, i) => {
-              return (
-                <>
-                  <Rect
-                    x={value.x}
-                    y={value.y}
-                    id={"rect" + i}
-                    width={value.width}
-                    height={value.height}
-                    fill={fillcolor === value.x ? "red" : "transparent"}
-                    stroke={value.stroke ? value.stroke : "green"}
-                    name="rect"
-                    onContextMenu={handleContextMenu}
-                    onDblClick={selectRect}
-                  />
-                </>
-              );
-            })}
+          <group style={{ border: "solid 1px red", margin: 5 }}>
+            <LionImage imgurl={originimg} />
+            {annotationsToDraw &&
+              annotationsToDraw.map((value, i) => {
+                return (
+                  <>
+                    <Rect
+                      x={value.x}
+                      y={value.y}
+                      id={"rect" + i}
+                      width={value.width}
+                      height={value.height}
+                      fill={"transparent"}
+                      stroke={value.stroke ? value.stroke : "green"}
+                      strokeWidth={fillcolor === value.x ? 7 : 2}
+                      name="rect"
+                      onContextMenu={handleContextMenu}
+                      onDblClick={selectRect}
+                      centeredScaling={true}
+                    />
+                  </>
+                );
+              })}
+          </group>
         </Layer>
       </Stage>
 

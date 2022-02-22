@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./App.css";
 import Header from "./components/header";
 import ControlPanel from "./components/controlPanel";
 import Sidebar from "./components/sidebar";
@@ -11,7 +10,7 @@ const { Footer, Sider, Content } = Layout;
 
 function App() {
   return (
-    <div className="App">
+    <div>
       <Layout>
         <Header></Header>
 

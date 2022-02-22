@@ -13,11 +13,13 @@ import {
   Row,
   InputNumber,
 } from "antd";
-
+import "antd/dist/antd.css";
+import "antd-button-color/dist/css/style.css";
 import { PlusOutlined, MinusOutlined, RedoOutlined } from "@ant-design/icons";
 import $ from "jquery";
 import _ from "lodash";
 import { AnnotationToPosition } from "./konvaAdd";
+import addbtn from "../images/Add_btn.png";
 
 export const countGene = (data) => {
   //let result_json = JSON.parse(input);
@@ -209,53 +211,8 @@ const ImageForm = () => {
       {
         image: thumbimg,
         filepath: imgname,
-        classification: readtype, //"stable",
+        classification: readtype,
         result_json: JSON.stringify({ results: position }),
-        // '{"results":[{"position" : [485, 115, 556, 144], "class" : 1},\r\n' +
-        // '{"position" : [688, 173, 720, 224], "class" : 1},\r\n' +
-        // '{"position" : [706, 228, 738, 299], "class" : 1},\r\n' +
-        // '{"position" : [663, 265, 704, 308], "class" : 1},\r\n' +
-        // '{"position" : [752, 246, 800, 283], "class" : 1},\r\n' +
-        // '{"position" : [738, 276, 784, 309], "class" : 1},\r\n' +
-        // '{"position" : [805, 277, 830, 314], "class" : 2},\r\n' +
-        // '{"position" : [841, 265, 874, 303], "class" : 1},\r\n' +
-        // '{"position" : [614, 293, 651, 327], "class" : 1},\r\n' +
-        // '{"position" : [443, 348, 506, 392], "class" : 1},\r\n' +
-        // '{"position" : [499, 397, 530, 430], "class" : 1},\r\n' +
-        // '{"position" : [537, 397, 585, 435], "class" : 1},\r\n' +
-        // '{"position" : [529, 435, 556, 458], "class" : 1},\r\n' +
-        // '{"position" : [550, 349, 585, 388], "class" : 2},\r\n' +
-        // '{"position" : [597, 343, 619, 365], "class" : 1},\r\n' +
-        // '{"position" : [615, 358, 650, 388], "class" : 1},\r\n' +
-        // '{"position" : [646, 384, 673, 409], "class" : 1},\r\n' +
-        // '{"position" : [784, 363, 826, 397], "class" : 1},\r\n' +
-        // '{"position" : [771, 392, 796, 415], "class" : 1},\r\n' +
-        // '{"position" : [801, 397, 846, 435], "class" : 1},\r\n' +
-        // '{"position" : [788, 415, 818, 447], "class" : 1},\r\n' +
-        // '{"position" : [781, 452, 804, 477], "class" : 2},\r\n' +
-        // '{"position" : [379, 436, 410, 485], "class" : 1},\r\n' +
-        // '{"position" : [409, 447, 444, 504], "class" : 1},\r\n' +
-        // '{"position" : [378, 500, 408, 522], "class" : 1},\r\n' +
-        // '{"position" : [383, 526, 422, 553], "class" : 1},\r\n' +
-        // '{"position" : [418, 511, 447, 541], "class" : 1},\r\n' +
-        // '{"position" : [501, 533, 537, 571], "class" : 1},\r\n' +
-        // '{"position" : [529, 523, 557, 545], "class" : 1},\r\n' +
-        // '{"position" : [537, 572, 590, 599], "class" : 1},\r\n' +
-        // '{"position" : [518, 602, 570, 629], "class" : 2},\r\n' +
-        // '{"position" : [496, 626, 518, 652], "class" : 1},\r\n' +
-        // '{"position" : [609, 633, 638, 657], "class" : 1},\r\n' +
-        // '{"position" : [573, 472, 634, 534], "class" : 1},\r\n' +
-        // '{"position" : [597, 525, 645, 560], "class" : 1},\r\n' +
-        // '{"position" : [633, 561, 656, 586], "class" : 1},\r\n' +
-        // '{"position" : [651, 572, 679, 604], "class" : 1},\r\n' +
-        // '{"position" : [653, 598, 696, 632], "class" : 1},\r\n' +
-        // '{"position" : [683, 570, 725, 595], "class" : 1},\r\n' +
-        // '{"position" : [656, 522, 680, 541], "class" : 1},\r\n' +
-        // '{"position" : [683, 527, 715, 563], "class" : 1},\r\n' +
-        // '{"position" : [711, 527, 752, 572], "class" : 2},\r\n' +
-        // '{"position" : [664, 459, 721, 522], "class" : 2},\r\n' +
-        // '{"position" : [620, 397, 649, 429], "class" : 1}]}\r\n' +
-        // "\r\n",
         id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
       }
     );
@@ -285,26 +242,57 @@ const ImageForm = () => {
     <>
       <div className="menutop">
         <form>
-          <div className="uploadform">
-            <label htmlFor="file">Upload File:</label>
+          <div className="file-input-wrapper">
+            <label htmlFor="file">
+              <img
+                src={addbtn}
+                alt="fileupload"
+                style={{ cursor: "pointer" }}
+              />
+            </label>
             <input
               type="file"
               id="file"
               //accept=".jpg"
               //multiple
               //onChange={handleFileChange}
+              className="uploadButton"
               onChange={fileUpload}
             />
-            <Button
+            <input id="file-path" type="text" placeholder="Upload your file" />
+            {/* <Button
               shape="round"
               size="large"
-              type="primary"
+              type="success"
               onClick={handleSubmit}
             >
               Upload
-            </Button>
+            </Button> */}
           </div>
         </form>
+
+        {/* <section className="section-preview">
+          <form className="md-form my-3">
+            <div className="file-field">
+              <div className="btn btn-primary btn-sm float-left waves-effect waves-light">
+                <span>Choose file</span>
+                <input type="file" />
+              </div>
+              <div className="file-path-wrapper">
+                <input
+                  className="file-path validate"
+                  type="text"
+                  placeholder="Upload your file"
+                />
+              </div>
+            </div>
+          </form>
+        </section> */}
+        {/* <label className="uploadLabelBlue">
+          <input type="file" onChange={fileUpload} className="uploadButton" />
+          Upload
+          <img id="Add_btn" src="/images/Add_btn.png" style="cursor:pointer;" />
+        </label> */}
         {/* <label for="input-file">
           <img id="Add_btn" src="/images/Add_btn.png" style="cursor:pointer;" />
         </label>
@@ -321,7 +309,7 @@ const ImageForm = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button shape="round" size="large" type="primary">
+            <Button shape="round" size="large" type="success">
               안정형 판독
             </Button>
           </Popconfirm>
@@ -332,7 +320,7 @@ const ImageForm = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button shape="round" size="large" type="primary">
+            <Button shape="round" size="large" type="success">
               불안정형 판독
             </Button>
           </Popconfirm>
@@ -408,7 +396,7 @@ const ImageForm = () => {
             />
           </Space>
         </div>
-        <Button shape="round" size="large" type="primary" onClick={reporting}>
+        <Button shape="round" size="large" type="lightdark" onClick={reporting}>
           리포트 보기
         </Button>
       </div>

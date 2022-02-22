@@ -6,7 +6,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
+.heading {
+  display: grid;
+  grid-template-columns: 310px 1fr 140px;
+  justify-items: stretch;
+  background-color: #00a041;
+}
 .sidebar {
   padding: 15px;
 }
@@ -21,11 +26,13 @@ body {
   grid-template-columns: 1fr 1fr;
   justify-items: stretch;
   grid-gap: 20px;
-  margin: 20px;
+  margin: 10px 0 15px 0;
+  padding: 10px 5px;
+  border-bottom: solid 1px grey;
 }
 .menubottom {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 140px;
   justify-items: stretch;
   grid-gap: 20px;
   margin: 20px;
@@ -88,4 +95,42 @@ li:hover {
 }
 .sideclicked {
   opacity: 0.8;
+}
+
+.uploadLabel {
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 7px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.file-input-wrapper {
+  margin: 2px;
+  overflow: hidden;
+  position: relative;
+  width: 318px;
+
+  cursor: pointer;
+}
+
+.file-input-wrapper > input[type="file"] {
+  font-size: 40px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-input-wrapper > .btn-file-input {
+  background-color: #494949;
+  border-radius: 4px;
+  color: #fff;
+  display: inline-block;
+  height: 34px;
+  margin: 0 0 0 -1px;
+  padding-left: 0;
+  width: 121px;
+  cursor: pointer;
 }
