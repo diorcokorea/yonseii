@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //import { globalVariable } from "../actions";
 import { Card, Skeleton, Avatar, Space } from "antd";
+import { globalVariable } from "../actions";
+import noimage from "../images/Side.png";
 
 const { Meta } = Card;
 
@@ -10,33 +12,53 @@ const Sidebar = () => {
   //dispatch(globalVariable({ display: "list" }));
   const thumb = useSelector((state) => state.global.thumbimg);
   const origin = useSelector((state) => state.global.originurl);
-  const [imgs, setImgs] = useState([]);
+  const readtype = useSelector((state) => state.global.readtype);
+  const [imgthumb, setImgthumb] = useState(noimage);
+  const [imgorigin, setImgorigin] = useState(noimage);
+  const [selected1, setSelected1] = useState(false);
+  const [selected2, setSelected2] = useState(false);
 
   useEffect(() => {
-    if (origin)
-      setImgs([
-        { img: origin, title: "test1", description: "good" },
-        { img: thumb },
-      ]);
-    console.log("whatis thumb", thumb);
+    console.log("thumb", thumb);
+    if (thumb && thumb !== " ") setImgthumb(thumb);
+    if (origin) setImgorigin(origin);
   }, [thumb, origin]);
 
   return (
     <div className="sidebar">
       <Space direction="vertical">
         <Card
+          className={selected1 ? "sideclicked" : "sidemenu"}
           hoverable
-          // cover={<img alt="example" src={imgg.img} width={140} />}
-          cover={<img src={origin} width={140} />}
+          onClick={() => {
+            dispatch(globalVariable({ drawtype: [false, false, false] }));
+            setSelected1(true);
+            setSelected2(false);
+          }}
+          cover={<img src={imgorigin} width={140} description="" />}
         >
-          <Meta title={"imgg.title"} description={"imgg.description"} />
+          <Meta title={"입력 이미지"} />
         </Card>
         <Card
           hoverable
-          // cover={<img alt="example" src={imgg.img} width={140} />}
-          cover={<img src={thumb} width={140} />}
+          className={selected2 ? "sideclicked" : "sidemenu"}
+          onClick={() => {
+            dispatch(globalVariable({ drawtype: [true, true, true] }));
+            setSelected1(false);
+            setSelected2(true);
+          }}
+          cover={<img crossOrigin="anonymous" src={imgthumb} width={140} />}
         >
-          <Meta title={"imgg.title"} description={"imgg.description"} />
+          <Meta
+            title={"정상/이상 판독"}
+            description={
+              readtype === "stable"
+                ? "안정형"
+                : readtype === "unstable"
+                ? "불안정형"
+                : ""
+            }
+          />
         </Card>
       </Space>
       {/* 

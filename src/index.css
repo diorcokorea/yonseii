@@ -77,3 +77,15 @@ li:hover {
   top: 50%;
   left: 50%;
 }
+.pressed {
+  background-color: grey;
+}
+.sidemenu {
+}
+.sidemenu:hover {
+  opacity: 0.7;
+  width: 101%;
+}
+.sideclicked {
+  opacity: 0.8;
+}

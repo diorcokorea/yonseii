@@ -1,12 +1,15 @@
 const globalVar = {
   scale: 0,
   showSpin: false,
-  thumgimg: "",
-  originurl: "",
+  thumbimg: null,
+  originimg: null,
+  originurl: null,
   position: null,
-  visiblebtn: false,
-  graphclick: {},
-  logicArr: [],
+  draggable: true,
+  readtype: "",
+  drawtype: [true, true, true],
+  currentShape: null,
+  counting: null,
 };
 
 export { globalVar };
