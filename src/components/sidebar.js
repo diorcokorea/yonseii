@@ -12,6 +12,7 @@ const Sidebar = () => {
   //dispatch(globalVariable({ display: "list" }));
   const thumb = useSelector((state) => state.global.thumbimg);
   const origin = useSelector((state) => state.global.originurl);
+  const originimg = useSelector((state) => state.global.originimg);
   const readtype = useSelector((state) => state.global.readtype);
   const [imgthumb, setImgthumb] = useState(noimage);
   const [imgorigin, setImgorigin] = useState(noimage);
@@ -19,10 +20,11 @@ const Sidebar = () => {
   const [selected2, setSelected2] = useState(false);
 
   useEffect(() => {
-    console.log("thumb", thumb);
-    if (thumb && thumb !== " ") setImgthumb(thumb);
-    if (origin) setImgorigin(origin);
-  }, [thumb, origin]);
+    if (!thumb) setImgthumb(noimage);
+    else setImgthumb(thumb);
+    if (!originimg) setImgorigin(noimage);
+    else setImgorigin(originimg);
+  }, [thumb, originimg]);
 
   return (
     <div className="sidebar">

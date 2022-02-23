@@ -6,45 +6,47 @@ import ContextMenu from "./contextmenu";
 import { countGene } from "./controlPanel";
 import useImage from "use-image";
 import _ from "lodash";
+import $ from "jquery";
 
-const addRect = (data) => {
-  let color;
-  //const data = JSON.parse(file);
-  //console.log(file);
-  if (!data) return;
-  return data.map((k, i) => {
-    const color = () => {
-      switch (k.class) {
-        case 1:
-        case 31:
-          return "blue";
-        case 2:
-        case 32:
-          return "red";
-        case 3:
-          return "#00A041";
+function pdfReport(data) {
+  $.ajax({
+    url: "http://localhost:3000/pdfgen",
+    type: "POST",
+    contentType: "application/json; charset=utf-8",
+    data: JSON.stringify(data),
+    timeout: 10000000,
+    success: function (obj) {
+      if (obj.success === true) {
+        window.open(obj.url, "_blank");
+      } else {
+        let message = "error : " + obj.reason;
+        alert(message);
       }
-    };
-    return {
-      id: "rect" + i,
-      x: k.position[0],
-      y: k.position[1],
-      width: k.position[2] - k.position[0],
-      height: k.position[3] - k.position[1],
-      stroke: color(),
-      class: k.class,
-    };
+    },
+    error: function (e) {
+      let message = "error : " + e;
+      alert(message);
+    },
   });
+}
+const addStroke = (data) => {
+  const color = () => {
+    switch (data.class) {
+      case 1:
+      case 31:
+        return "blue";
+      case 2:
+      case 32:
+        return "red";
+      case 3:
+        return "#00A041";
+    }
+  };
+  return {
+    ...data,
+    stroke: color(),
+  };
 };
-export const AnnotationToPosition = (rects) => {
-  return rects.map((rect, i) => {
-    return {
-      position: [rect.x, rect.y, rect.width + rect.x, rect.height + rect.y],
-      class: rect.class,
-    };
-  });
-};
-
 const LionImage = ({ imgurl }) => {
   const [image] = useImage(imgurl);
   return <Image image={image} />;
@@ -56,11 +58,13 @@ const DrawAnnotations = (props) => {
   //dispatch(globalVariable({ display: "list" }));
   const scale = useSelector((state) => state.global.scale);
   const drawtype = useSelector((state) => state.global.drawtype);
-  const posi = useSelector((state) => state.global.position);
+  const position = useSelector((state) => state.global.position);
   const originurl = useSelector((state) => state.global.originurl);
   const originimg = useSelector((state) => state.global.originimg);
   const draggable = useSelector((state) => state.global.draggable);
   const counting = useSelector((state) => state.global.counting);
+  const triggerthumb = useSelector((state) => state.global.triggerthumb);
+  const pdfrun = useSelector((state) => state.global.pdfrun);
   const stageRef = React.useRef(null);
 
   const [annotations, setAnnotations] = useState([]);
@@ -71,45 +75,48 @@ const DrawAnnotations = (props) => {
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (posi) {
-      const rdata = addRect(posi);
-      setAnnotations(rdata);
-      console.log("rerun", posi.length);
-      const filtered = drawByType(rdata);
-      console.log(filtered.length);
+    if (position) {
+      const filtered = drawByType(position);
       setAnnotationsToDraw(filtered);
-      const rtn = countGene(posi);
+      const rtn = countGene(position);
       dispatch(
         globalVariable({
           counting: { normal: rtn.normal, abnormal: rtn.abnormal },
         })
       );
-      makeThumbImage();
     }
-  }, [posi, originurl, drawtype]);
-  // useEffect(() => {
-  //   if (show) {
-  //     const obj = _.find(annotationsToDraw, { class: 3 });
-  //     currentShape = stageRef.current.find("#" + obj.id)[0];
-  //     console.log(currentShape);
-  //   }
-  // }, [show]);
+  }, [position, drawtype]);
+
   useEffect(() => {
     if (stageRef.current) resizeStage(stageRef.current, scale);
   }, [scale]);
   useEffect(() => {
     stageRef.current.on("click", (e) => {
       setShow(false);
+      localStorage.removeItem("selected");
       if (e.target.attrs.name === "rect") {
         selectRect(e);
       } else setFillcolor(null);
     });
   }, []);
   useEffect(() => {
-    if (stageRef.current) {
-      makeThumbImage();
+    if (triggerthumb) {
+      const img = makeThumbImage();
+      dispatch(globalVariable({ triggerthumb: false }));
+      if (pdfrun) {
+        const pdfrun1 = { ...pdfrun, image: img };
+        pdfReport(pdfrun1);
+        dispatch(globalVariable({ pdfrun: null }));
+      }
     }
-  }, [annotations]);
+  }, [triggerthumb]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setAnnotationsToDraw([]);
+    }, 100);
+  }, [originimg]);
+
   const drawByType = (rdata) => {
     let rtn = [];
     if (drawtype[2]) {
@@ -136,9 +143,8 @@ const DrawAnnotations = (props) => {
   const makeThumbImage = () => {
     // Create the Konva.Image() and add it to the stage
     var dataURL = stageRef.current.toDataURL();
-    console.log(stageRef.current, "dataURL", dataURL);
-
     dispatch(globalVariable({ thumbimg: dataURL }));
+    return dataURL;
   };
   //#region contextmenu
   const handleContextMenu = (e) => {
@@ -159,26 +165,31 @@ const DrawAnnotations = (props) => {
     setShow(true);
   };
   const contextClick = (type) => {
-    const xx = currentShape.attrs?.x;
-    const yy = currentShape.attrs?.y;
-    var index = _.findIndex(annotationsToDraw, { x: xx, y: yy });
-    const obj = _.find(annotationsToDraw, { x: xx, y: yy });
+    console.log(currentShape.attrs);
+    const id = currentShape.attrs?.id;
+    let posi = _.cloneDeep(position);
+    var index = _.findIndex(posi, (o) => {
+      return o.id === id;
+    });
+    const obj = _.find(posi, (o) => {
+      return o.id === id;
+    });
     switch (type) {
       case "delete":
-        annotationsToDraw.splice(index, 1);
+        posi.splice(index, 1);
         break;
       case "stable":
         obj.class = obj.class == 3 ? (obj.class = 31) : (obj.class = 1);
-        annotationsToDraw.splice(index, 1, obj);
+        console.log(obj);
+        posi.splice(index, 1, addStroke(obj));
         break;
       case "unstable":
         obj.class = obj.class == 3 ? (obj.class = 32) : (obj.class = 2);
-        annotationsToDraw.splice(index, 1, obj);
+        posi.splice(index, 1, addStroke(obj));
         break;
     }
-    const newPosition = AnnotationToPosition([...annotationsToDraw]);
 
-    dispatch(globalVariable({ position: newPosition }));
+    dispatch(globalVariable({ position: [...posi] }));
   };
   //#endregion
 
@@ -197,7 +208,8 @@ const DrawAnnotations = (props) => {
       const sx = parseInt(newAnnotation[0].x);
       const sy = parseInt(newAnnotation[0].y);
       const { x, y } = event.target.getStage().getRelativePointerPosition();
-
+      const idnum = parseInt(Math.random() * 100000);
+      console.log(idnum);
       const annotationToAdd = {
         x: sx,
         y: sy,
@@ -205,51 +217,18 @@ const DrawAnnotations = (props) => {
         height: y - sy,
         key: annotations.length + 1,
         class: 3,
-        id: "rect" + annotations.length,
+        id: "rect" + idnum,
       };
-      annotations.push(annotationToAdd);
+      let anno = [...position];
+      anno.push(annotationToAdd);
       setNewAnnotation([]);
       if ((x - sx < 5) | (y - sy < 5)) return;
-      setAnnotations(annotations);
-      const filteredAnnotations = drawByType([...annotations]);
+      //setAnnotations(annotations);
+      //setAnnotationToDraw(drawByType([...anno]));
       //setAnnotationsToDraw(filteredAnnotations);
 
-      const newPosition = AnnotationToPosition([...annotations]);
-
       dispatch(globalVariable({ draggable: true }));
-      dispatch(globalVariable({ position: newPosition }));
-      // setAnchorPoint({
-      //   x: sx + x,
-      //   y: sy + y,
-      // });
-      // setShow(true);
-      //   var dataURL = event.target.getStage().toDataURL({
-      //     mimeType: "image/jpeg",
-      //     quality: 0,
-      //     pixelRatio: 2,
-      //   });
-      //, event.target.getStage(), "dataURL", dataURL);
-
-      //   setTimeout(() => {
-      //     console.log(event.target);
-      //     currentShape = event.target
-      //       .getStage()
-      //       .find("#rect" + annotations.length);
-      //     setAnchorPoint({
-      //       x: x + 220,
-      //       y: y + 220,
-      //     });
-      //     setShow(true);
-      //   }, 1500);
-
-      //   //selection
-      //   const stage = event.target.getStage();
-      //   var shapes = stage.find(".rect");
-      //   var box = selectionRectangle.getClientRect();
-      //   var selected = shapes.filter((shape) =>
-      //     Konva.Util.haveIntersection(box, shape.getClientRect())
-      //   );
-      //   tr.nodes(selected);
+      dispatch(globalVariable({ position: anno }));
     }
   };
 
@@ -270,7 +249,7 @@ const DrawAnnotations = (props) => {
       ]);
 
       setAnnotationsToDraw([
-        ...annotations,
+        ...position,
         {
           x: sx,
           y: sy,
@@ -345,12 +324,18 @@ const DrawAnnotations = (props) => {
   //#endregion
   const selectRect = (e) => {
     e.evt.preventDefault();
+    console.log(e.target, annotationsToDraw);
     localStorage.setItem(
       "selected",
-      JSON.stringify({ x: e.target.attrs.x, y: e.target.attrs.y })
+      JSON.stringify({
+        attrs: e.target.attrs,
+        x: e.target.attrs.x,
+        y: e.target.attrs.y,
+        id: e.target.attrs.id,
+      })
     );
     localStorage.setItem("annotation", JSON.stringify(annotationsToDraw));
-    setFillcolor(e.target.attrs.x);
+    setFillcolor(e.target.attrs.id);
   };
 
   return (
@@ -371,6 +356,7 @@ const DrawAnnotations = (props) => {
         height={window.innerHeight}
         draggable={draggable}
         ref={stageRef}
+        id="stage"
         style={{ border: "solid 1px black" }}
       >
         <Layer>
@@ -383,15 +369,15 @@ const DrawAnnotations = (props) => {
                     <Rect
                       x={value.x}
                       y={value.y}
-                      id={"rect" + i}
+                      id={value.id}
                       width={value.width}
                       height={value.height}
-                      fill={"transparent"}
+                      fill={fillcolor === value.id ? "yellow" : "transparent"}
                       stroke={value.stroke ? value.stroke : "green"}
-                      strokeWidth={fillcolor === value.x ? 7 : 2}
+                      //strokeWidth={fillcolor === value.x ? 7 : 2}
                       name="rect"
                       onContextMenu={handleContextMenu}
-                      onDblClick={selectRect}
+                      // onClick={selectRect}
                       centeredScaling={true}
                     />
                   </>

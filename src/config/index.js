@@ -10,6 +10,8 @@ const globalVar = {
   drawtype: [true, true, true],
   currentShape: null,
   counting: null,
+  triggerthumb: false,
+  pdfrun: null,
 };
 
 export { globalVar };

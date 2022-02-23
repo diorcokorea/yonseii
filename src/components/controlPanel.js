@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
 import axios from "axios";
-import { Spin, Space } from "antd";
+import { Spin, Space, Input } from "antd";
 import {
   Button,
   Slider,
   Checkbox,
-  Input,
   Popconfirm,
   Col,
   Row,
@@ -35,33 +34,42 @@ export const countGene = (data) => {
 
 const ImageForm = () => {
   const dispatch = useDispatch();
-  //dispatch(globalVariable({ display: "list" }));
   const scale = useSelector((state) => state.global.scale);
   const draggable = useSelector((state) => state.global.draggable);
   const drawtype = useSelector((state) => state.global.drawtype);
   const position = useSelector((state) => state.global.position);
   const counting = useSelector((state) => state.global.counting);
   const thumbimg = useSelector((state) => state.global.thumbimg);
-  //const currentShape = useSelector((state) => state.global.currentShape);
+  const originimg = useSelector((state) => state.global.originimg);
 
-  const [imgfile, setImgfile] = useState(null);
-  const [imgname, setImgname] = useState("안정형.jpg");
+  const [imgname, setImgname] = useState("");
   const [file, setFile] = useState(null);
   const [readtype, setReadtype] = useState("stable");
-  //   const [normalnum, setNormalnum] = useState("");
-  //   const [abnum, setAbnum] = useState("");
   const [isStable, setIsStable] = useState(false);
   const [isUnstable, setIsUnstable] = useState(false);
   const [spinshow, setSpinshow] = useState(false);
-  const [inputVal, setInputVal] = useState();
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
+
+  useEffect(() => {
+    dispatch(
+      globalVariable({
+        counting: { normal: "", abnormal: "" },
+      })
+    );
+    dispatch(globalVariable({ scale: 25 }));
+    dispatch(globalVariable({ thumbimg: null }));
+    dispatch(globalVariable({ readtype: null }));
+    setIsStable(false);
+    setIsUnstable(false);
+  }, [originimg]);
+
   useEffect(() => {
     setPlustype(!draggable);
   }, [draggable]);
+
   const handleFileChange = (event) => {
     setFile(event.target.files);
-    console.log(file);
   };
 
   function getBase64(file) {
@@ -76,26 +84,27 @@ const ImageForm = () => {
     let URL = window.webkitURL || window.URL;
     if (e.target.files.length == 0) return;
     setFile(e.target.files);
+
     let url = URL.createObjectURL(e.target.files[0]);
 
     let img = new Image();
     img.src = url;
 
     img.onload = function () {
+      setImgname(e.target.files[0].name);
       //document.getElementById("n_6067_7544_0059jpg").innerHTML = e.target.files[0].name;
       getBase64(e.target.files[0]).then((data) => {
-        console.log(data);
         dispatch(globalVariable({ originimg: data }));
+        dispatch(globalVariable({ thumbimg: null }));
       });
     };
   }
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = (files) => {
+    //event.preventDefault();
     const data = new FormData();
-    for (var x = 0; x < file.length; x++) {
-      data.append("file", file[x]);
+    for (var x = 0; x < files.length; x++) {
+      data.append("file", files[x]);
     }
-
     axios.post("http://localhost:3000/fileupload", data).then((res) => {
       dispatch(
         globalVariable({
@@ -121,14 +130,12 @@ const ImageForm = () => {
         );
         break;
     }
-    //console.log("checked = ", checkedValues);
   }
   function confirm(type) {
     setReadtype(type);
     setSpinshow(true);
     setTimeout(() => {
       reading(type);
-      console.log(type);
     }, 1000);
   }
   const removeAll = () => {
@@ -138,59 +145,88 @@ const ImageForm = () => {
     dispatch(globalVariable({ position: origin }));
   };
   const deleteSelected = () => {
-    let annotationsToDraw = JSON.parse(localStorage.getItem("annotation"));
+    // let annotationsToDraw = JSON.parse(localStorage.getItem("annotation"));
+    // console.log(annotationsToDraw);
     const xy = JSON.parse(localStorage.getItem("selected"));
-    var index = _.findIndex(annotationsToDraw, {
-      x: xy.x,
-      y: xy.y,
+    var index = _.findIndex(position, (o) => {
+      return o.id === xy.id;
     });
-    annotationsToDraw.splice(index, 1);
-    const newPosition = AnnotationToPosition([...annotationsToDraw]);
-    dispatch(globalVariable({ position: newPosition }));
+    const position1 = _.cloneDeep(position);
+    console.log(xy, index);
+    position1.splice(index, 1);
+    console.log(position1);
+
+    // const newPosition = AnnotationToPosition([...annotationsToDraw]);
+    // console.log(annotationsToDraw, newPosition);
+    // // return;
+    dispatch(globalVariable({ position: position1 }));
     localStorage.removeItem("selected");
     localStorage.removeItem("annotation");
   };
 
+  const addRect = (data) => {
+    if (!data) return;
+    return data.map((k, i) => {
+      const color = () => {
+        switch (k.class) {
+          case 1:
+          case 31:
+            return "blue";
+          case 2:
+          case 32:
+            return "red";
+          case 3:
+            return "#00A041";
+        }
+      };
+      return {
+        id: "rect" + i,
+        x: k.position[0],
+        y: k.position[1],
+        width: k.position[2] - k.position[0],
+        height: k.position[3] - k.position[1],
+        stroke: color(),
+        class: k.class,
+      };
+    });
+  };
   function reading(type) {
     setSpinshow(false);
-
+    console.log(imgname);
     $.ajax({
       url: "http://localhost:3000/reading",
       type: "POST",
       dataType: "json",
       contentType: "application/json; charset=utf-8",
-      data: JSON.stringify({ filepath: imgname, classification: type }),
+      data: JSON.stringify({
+        image: originimg,
+        filepath: imgname,
+        classification: type,
+      }),
       success: function (obj) {
         if (obj.success === true) {
+          console.log(obj);
           const result_json = JSON.parse(obj.result_json);
-          //   let normal = 0,
-          //     abnormal = 0;
-          //   for (let i = 0; i < result_json.results.length; i++) {
-          //     if (result_json.results[i].class === 1) {
-          //       normal++;
-          //     } else if (result_json.results[i].class === 2) {
-          //       abnormal++;
-          //     }
-          //   }
+
           const rtn = countGene(result_json);
+          const resultwithid = addRect(result_json.results);
+
+          console.log(resultwithid);
           dispatch(
             globalVariable({
               counting: { normal: rtn.normal, abnormal: rtn.abnormal },
             })
           );
-          //   setNormalnum(rtn.normal);
-          //   setAbnum(rtn.abnormal);
 
           setIsStable(true);
           setIsUnstable(true);
 
-          //returndata(result_json.results);
-          dispatch(globalVariable({ position: result_json.results }));
+          dispatch(globalVariable({ position: resultwithid }));
           dispatch(globalVariable({ drawtype: [true, true, true] }));
           dispatch(globalVariable({ readtype: type }));
+          dispatch(globalVariable({ triggerthumb: true }));
         } else {
           let message = "success error : " + obj.reason;
-          console.log(message);
         }
       },
       error: function (e) {
@@ -200,44 +236,30 @@ const ImageForm = () => {
     });
   }
   const reporting = () => {
-    report(
-      // {
-      // 	"image" : localStorage.getItem(RESULT_IMAGE_LAWDATA_SESSION_KEY),
-      // 	"filepath" : localStorage.getItem(SOURCE_FILE_PATH_SESSION_KEY),
-      // 	"classification" : localStorage.getItem(CLASSIFICATION_SESSION_KEY),
-      // 	"result_json": localStorage.getItem(RESULT_JSON_SESSION_KEY),
-      // 	"id": localStorage.getItem(RESULT_ID_SEESION_KEY)
-      // }
-      {
-        image: thumbimg,
-        filepath: imgname,
-        classification: readtype,
-        result_json: JSON.stringify({ results: position }),
-        id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
-      }
+    dispatch(globalVariable({ triggerthumb: true }));
+    dispatch(
+      globalVariable({
+        pdfrun: {
+          image: thumbimg,
+          filepath: imgname,
+          classification: readtype,
+          result_json: JSON.stringify({ results: position }),
+          id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
+        },
+      })
     );
+    console.log($("#stage"));
+    // report(
+    //   {
+    //     image: thumbimg,
+    //     filepath: imgname,
+    //     classification: readtype,
+    //     result_json: JSON.stringify({ results: position }),
+    //     id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
+    //   }
+    // );
   };
-  function report(data) {
-    $.ajax({
-      url: "http://localhost:3000/pdfgen",
-      type: "POST",
-      contentType: "application/json; charset=utf-8",
-      data: JSON.stringify(data),
-      timeout: 10000000,
-      success: function (obj) {
-        if (obj.success === true) {
-          window.open(obj.url, "_blank");
-        } else {
-          let message = "error : " + obj.reason;
-          alert(message);
-        }
-      },
-      error: function (e) {
-        let message = "error : " + e;
-        alert(message);
-      },
-    });
-  }
+
   return (
     <>
       <div className="menutop">
@@ -247,7 +269,7 @@ const ImageForm = () => {
               <img
                 src={addbtn}
                 alt="fileupload"
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", width: "80" }}
               />
             </label>
             <input
@@ -259,49 +281,16 @@ const ImageForm = () => {
               className="uploadButton"
               onChange={fileUpload}
             />
-            <input id="file-path" type="text" placeholder="Upload your file" />
-            {/* <Button
-              shape="round"
+            <Input
+              disabled
+              id="file-path"
               size="large"
-              type="success"
-              onClick={handleSubmit}
-            >
-              Upload
-            </Button> */}
+              type="text"
+              value={imgname}
+            />
           </div>
         </form>
 
-        {/* <section className="section-preview">
-          <form className="md-form my-3">
-            <div className="file-field">
-              <div className="btn btn-primary btn-sm float-left waves-effect waves-light">
-                <span>Choose file</span>
-                <input type="file" />
-              </div>
-              <div className="file-path-wrapper">
-                <input
-                  className="file-path validate"
-                  type="text"
-                  placeholder="Upload your file"
-                />
-              </div>
-            </div>
-          </form>
-        </section> */}
-        {/* <label className="uploadLabelBlue">
-          <input type="file" onChange={fileUpload} className="uploadButton" />
-          Upload
-          <img id="Add_btn" src="/images/Add_btn.png" style="cursor:pointer;" />
-        </label> */}
-        {/* <label for="input-file">
-          <img id="Add_btn" src="/images/Add_btn.png" style="cursor:pointer;" />
-        </label>
-        <input
-          id="input-file"
-          type="file"
-          onChange="fileUpload(event)"
-          accept="image/gif, image/jpeg, image/png"
-        ></input> */}
         <div style={{ textAlign: "right" }}>
           <Popconfirm
             title="안정형 판독을 진행하시겠습니까?"
