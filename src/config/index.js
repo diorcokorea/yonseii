@@ -12,6 +12,7 @@ const globalVar = {
   counting: null,
   triggerthumb: false,
   pdfrun: null,
+  contextinfo: null,
 };
 
 export { globalVar };

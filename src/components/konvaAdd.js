@@ -10,7 +10,7 @@ import $ from "jquery";
 
 function pdfReport(data) {
   $.ajax({
-    url: "http://localhost:3000/pdfgen",
+    url: "http://localhost:99/pdfgen",
     type: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
@@ -65,6 +65,7 @@ const DrawAnnotations = (props) => {
   const counting = useSelector((state) => state.global.counting);
   const triggerthumb = useSelector((state) => state.global.triggerthumb);
   const pdfrun = useSelector((state) => state.global.pdfrun);
+  const contextinfo = useSelector((state) => state.global.contextinfo);
   const stageRef = React.useRef(null);
 
   const [annotations, setAnnotations] = useState([]);
@@ -111,6 +112,13 @@ const DrawAnnotations = (props) => {
     }
   }, [triggerthumb]);
 
+  useEffect(() => {
+    if (contextinfo) {
+      setShow(true);
+      currentShape = { attrs: { id: contextinfo } };
+      dispatch(globalVariable({ contextinfo: null }));
+    }
+  }, [contextinfo]);
   useEffect(() => {
     setTimeout(() => {
       setAnnotationsToDraw([]);
@@ -166,7 +174,9 @@ const DrawAnnotations = (props) => {
   };
   const contextClick = (type) => {
     console.log(currentShape.attrs);
+
     const id = currentShape.attrs?.id;
+    console.log(id);
     let posi = _.cloneDeep(position);
     var index = _.findIndex(posi, (o) => {
       return o.id === id;
@@ -190,6 +200,7 @@ const DrawAnnotations = (props) => {
     }
 
     dispatch(globalVariable({ position: [...posi] }));
+    setShow(false);
   };
   //#endregion
 
@@ -223,12 +234,19 @@ const DrawAnnotations = (props) => {
       anno.push(annotationToAdd);
       setNewAnnotation([]);
       if ((x - sx < 5) | (y - sy < 5)) return;
+      setAnchorPoint({
+        x: x + 220,
+        y: y + 220,
+      });
+      // setShow(true);
+
       //setAnnotations(annotations);
       //setAnnotationToDraw(drawByType([...anno]));
       //setAnnotationsToDraw(filteredAnnotations);
 
       dispatch(globalVariable({ draggable: true }));
       dispatch(globalVariable({ position: anno }));
+      dispatch(globalVariable({ contextinfo: "rect" + idnum }));
     }
   };
 
@@ -343,10 +361,10 @@ const DrawAnnotations = (props) => {
       {/* <button onClick={makeThumbImage}>click</button>
       <button onClick={() => console.log("draggable", draggable)}>
         draggable
-      </button>
+      </button>*/}
       <button onClick={() => console.log(currentShape)}>currentShape</button>
       <button onClick={() => console.log(fillcolor)}>fillcolor</button>
-      <button onClick={reload}>reload</button> */}
+
       <Stage
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}

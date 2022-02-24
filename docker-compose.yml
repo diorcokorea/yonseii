@@ -10,4 +10,4 @@ services:
     volumes:
       - ./src:/app/src
     ports:
-      - "3002:80"
+      - "88:80"

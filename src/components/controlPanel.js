@@ -105,10 +105,10 @@ const ImageForm = () => {
     for (var x = 0; x < files.length; x++) {
       data.append("file", files[x]);
     }
-    axios.post("http://localhost:3000/fileupload", data).then((res) => {
+    axios.post("http://localhost:99/fileupload", data).then((res) => {
       dispatch(
         globalVariable({
-          originurl: `http://localhost:3000/media/${res.data.filename[0]}`,
+          originurl: `http://localhost:99/media/${res.data.filename[0]}`,
         })
       );
       // passImgurl(`http://localhost:3000/media/${res.data.filename[0]}`);
@@ -152,16 +152,10 @@ const ImageForm = () => {
       return o.id === xy.id;
     });
     const position1 = _.cloneDeep(position);
-    console.log(xy, index);
-    position1.splice(index, 1);
-    console.log(position1);
 
-    // const newPosition = AnnotationToPosition([...annotationsToDraw]);
-    // console.log(annotationsToDraw, newPosition);
-    // // return;
+    position1.splice(index, 1);
     dispatch(globalVariable({ position: position1 }));
     localStorage.removeItem("selected");
-    localStorage.removeItem("annotation");
   };
 
   const addRect = (data) => {
@@ -194,7 +188,7 @@ const ImageForm = () => {
     setSpinshow(false);
     console.log(imgname);
     $.ajax({
-      url: "http://localhost:3000/reading",
+      url: "http://localhost:99/reading",
       type: "POST",
       dataType: "json",
       contentType: "application/json; charset=utf-8",
