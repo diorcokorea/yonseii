@@ -10,7 +10,7 @@ import $ from "jquery";
 
 function pdfReport(data) {
   $.ajax({
-    url: "http://localhost:99/pdfgen",
+    url: "http://diorco2.iptime.org:99/pdfgen",
     type: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
