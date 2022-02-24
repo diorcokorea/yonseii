@@ -105,10 +105,10 @@ const ImageForm = () => {
     for (var x = 0; x < files.length; x++) {
       data.append("file", files[x]);
     }
-    axios.post("http://localhost:99/fileupload", data).then((res) => {
+    axios.post("http://diorco2.iptime.org:99/fileupload", data).then((res) => {
       dispatch(
         globalVariable({
-          originurl: `http://localhost:99/media/${res.data.filename[0]}`,
+          originurl: `http://diorco2.iptime.org/media/${res.data.filename[0]}`,
         })
       );
       // passImgurl(`http://localhost:3000/media/${res.data.filename[0]}`);
@@ -188,7 +188,7 @@ const ImageForm = () => {
     setSpinshow(false);
     console.log(imgname);
     $.ajax({
-      url: "http://localhost:99/reading",
+      url: "http://diorco2.iptime.org:99/reading",
       type: "POST",
       dataType: "json",
       contentType: "application/json; charset=utf-8",

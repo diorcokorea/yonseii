@@ -361,9 +361,9 @@ const DrawAnnotations = (props) => {
       {/* <button onClick={makeThumbImage}>click</button>
       <button onClick={() => console.log("draggable", draggable)}>
         draggable
-      </button>*/}
+      </button>
       <button onClick={() => console.log(currentShape)}>currentShape</button>
-      <button onClick={() => console.log(fillcolor)}>fillcolor</button>
+      <button onClick={() => console.log(fillcolor)}>fillcolor</button>*/}
 
       <Stage
         onMouseDown={handleMouseDown}
