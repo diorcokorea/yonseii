@@ -34,6 +34,7 @@ const Sidebar = () => {
           hoverable
           onClick={() => {
             dispatch(globalVariable({ drawtype: [false, false, false] }));
+            dispatch(globalVariable({ sidetype: "nude" }));
             setSelected1(true);
             setSelected2(false);
           }}
@@ -46,6 +47,7 @@ const Sidebar = () => {
           className={selected2 ? "sideclicked" : "sidemenu"}
           onClick={() => {
             dispatch(globalVariable({ drawtype: [true, true, true] }));
+            dispatch(globalVariable({ sidetype: "added" }));
             setSelected1(false);
             setSelected2(true);
           }}

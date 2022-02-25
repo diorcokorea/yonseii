@@ -48,6 +48,7 @@ const ImageForm = () => {
   const [isStable, setIsStable] = useState(false);
   const [isUnstable, setIsUnstable] = useState(false);
   const [spinshow, setSpinshow] = useState(false);
+  const [menushow, setMenushow] = useState(false);
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
 
@@ -136,6 +137,7 @@ const ImageForm = () => {
     setSpinshow(true);
     setTimeout(() => {
       reading(type);
+      setMenushow(true);
     }, 1000);
   }
   const removeAll = () => {
@@ -188,7 +190,9 @@ const ImageForm = () => {
     setSpinshow(false);
     console.log(imgname);
     $.ajax({
-      url: "http://diorco2.iptime.org:99/reading",
+      //url: "http://diorco2.iptime.org:99/reading",
+
+      url: `${process.env.REACT_APP_SERVER}/reading`,
       type: "POST",
       dataType: "json",
       contentType: "application/json; charset=utf-8",
@@ -309,80 +313,90 @@ const ImageForm = () => {
           </Popconfirm>
         </div>
       </div>
-      <div className="menubottom">
-        <Row>
-          <Col span={12}>
-            <Slider
-              min={1}
-              max={100}
-              onChange={(value) => dispatch(globalVariable({ scale: value }))}
-              value={scale}
+      {menushow && (
+        <div className="menubottom">
+          <Row>
+            <Col span={12}>
+              <Slider
+                min={1}
+                max={100}
+                onChange={(value) => dispatch(globalVariable({ scale: value }))}
+                value={scale}
+              />
+            </Col>
+            <Col span={4}>
+              <InputNumber
+                min={1}
+                max={100}
+                style={{ margin: "0 16px" }}
+                value={scale}
+                onChange={(value) => dispatch(globalVariable({ scale: value }))}
+              />
+            </Col>
+          </Row>
+          <div>
+            <Checkbox
+              onChange={() => checkOnchange("stable")}
+              checked={isStable}
+            >
+              정상
+            </Checkbox>
+            <Input
+              id="normal"
+              value={counting?.normal}
+              disUnstableled
+              style={{ width: "20%" }}
             />
-          </Col>
-          <Col span={4}>
-            <InputNumber
-              min={1}
-              max={100}
-              style={{ margin: "0 16px" }}
-              value={scale}
-              onChange={(value) => dispatch(globalVariable({ scale: value }))}
+            &nbsp;
+            <Checkbox
+              onChange={() => checkOnchange("unstable")}
+              checked={isUnstable}
+            >
+              이상
+            </Checkbox>
+            <Input
+              id="abnormal"
+              value={counting?.abnormal}
+              disUnstableled
+              style={{ width: "20%" }}
             />
-          </Col>
-        </Row>
-        <div>
-          <Checkbox onChange={() => checkOnchange("stable")} checked={isStable}>
-            정상
-          </Checkbox>
-          <Input
-            id="normal"
-            value={counting?.normal}
-            disUnstableled
-            style={{ width: "20%" }}
-          />
-          &nbsp;
-          <Checkbox
-            onChange={() => checkOnchange("unstable")}
-            checked={isUnstable}
+          </div>
+          <div>
+            <Space style={{ width: "100%" }}>
+              <Button
+                size="large"
+                title="마우스드래그로 Box를 추가할수 있습니다."
+                type={plustype ? "primary" : ""}
+                onClick={() => {
+                  setPlustype(!plustype);
+                  dispatch(globalVariable({ draggable: plustype }));
+                }}
+                icon={<PlusOutlined />}
+              />
+              <Button
+                icon={<MinusOutlined />}
+                type={minustype}
+                size="large"
+                onClick={deleteSelected}
+              />
+              <Button
+                icon={<RedoOutlined />}
+                title="새로 입력한 Box를 초기화합니다."
+                size="large"
+                onClick={removeAll}
+              />
+            </Space>
+          </div>
+          <Button
+            shape="round"
+            size="large"
+            type="lightdark"
+            onClick={reporting}
           >
-            이상
-          </Checkbox>
-          <Input
-            id="abnormal"
-            value={counting?.abnormal}
-            disUnstableled
-            style={{ width: "20%" }}
-          />
+            리포트 보기
+          </Button>
         </div>
-        <div>
-          <Space style={{ width: "100%" }}>
-            <Button
-              size="large"
-              title="마우스드래그로 Box를 추가할수 있습니다."
-              type={plustype ? "primary" : ""}
-              onClick={() => {
-                setPlustype(!plustype);
-                dispatch(globalVariable({ draggable: plustype }));
-              }}
-              icon={<PlusOutlined />}
-            />
-            <Button
-              icon={<MinusOutlined />}
-              type={minustype}
-              size="large"
-              onClick={deleteSelected}
-            />
-            <Button
-              icon={<RedoOutlined />}
-              title="새로 입력한 Box를 초기화합니다."
-              size="large"
-              onClick={removeAll}
-            />
-          </Space>
-        </div>
-        <Button shape="round" size="large" type="lightdark" onClick={reporting}>
-          리포트 보기
-        </Button>
-      </div>
+      )}
       {spinshow && (
         <div>
           <Spin size="large" />

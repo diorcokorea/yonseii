@@ -10,7 +10,8 @@ import $ from "jquery";
 
 function pdfReport(data) {
   $.ajax({
-    url: "http://diorco2.iptime.org:99/pdfgen",
+    //url: "http://diorco2.iptime.org:99/pdfgen",
+    url: `${process.env.REACT_APP_SERVER}/pdgen`,
     type: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
@@ -47,8 +48,10 @@ const addStroke = (data) => {
     stroke: color(),
   };
 };
-const LionImage = ({ imgurl }) => {
-  const [image] = useImage(imgurl);
+const LionImage = ({ originimg, stage }) => {
+  const [image] = useImage(originimg);
+  console.log(image?.width);
+  if (stage) console.log(stage.getWidth());
   return <Image image={image} />;
 };
 let currentShape;
@@ -58,6 +61,7 @@ const DrawAnnotations = (props) => {
   //dispatch(globalVariable({ display: "list" }));
   const scale = useSelector((state) => state.global.scale);
   const drawtype = useSelector((state) => state.global.drawtype);
+  const sidetype = useSelector((state) => state.global.sidetype);
   const position = useSelector((state) => state.global.position);
   const originurl = useSelector((state) => state.global.originurl);
   const originimg = useSelector((state) => state.global.originimg);
@@ -68,12 +72,16 @@ const DrawAnnotations = (props) => {
   const contextinfo = useSelector((state) => state.global.contextinfo);
   const stageRef = React.useRef(null);
 
+  const [imgObj] = useImage(originimg);
+
   const [annotations, setAnnotations] = useState([]);
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
   const [show, setShow] = useState(false);
   const [fillcolor, setFillcolor] = useState();
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+  const [imgcenter, setImgcenter] = useState({});
+  const [saveposition, setSaveposition] = useState({});
 
   useEffect(() => {
     if (position) {
@@ -99,6 +107,11 @@ const DrawAnnotations = (props) => {
         selectRect(e);
       } else setFillcolor(null);
     });
+    setImgcenter({
+      x: stageRef.current.getWidth() / 2,
+      y: stageRef.current.getWidth() / 2,
+    });
+    console.log(stageRef.current.getWidth());
   }, []);
   useEffect(() => {
     if (triggerthumb) {
@@ -113,6 +126,7 @@ const DrawAnnotations = (props) => {
   }, [triggerthumb]);
 
   useEffect(() => {
+    //trigger when context mouseup
     if (contextinfo) {
       setShow(true);
       currentShape = { attrs: { id: contextinfo } };
@@ -281,6 +295,25 @@ const DrawAnnotations = (props) => {
   //#endregion
 
   //#region
+  const fitScreen = () => {
+    const padding = 5;
+
+    var w = imgObj.width;
+    var h = imgObj.height;
+    var targetW = stageRef.current.getWidth() - 2 * padding;
+    var targetH = stageRef.current.getHeight() - 2 * padding;
+
+    // compute the ratios of image dimensions to aperture dimensions
+    var widthFit = targetW / w;
+    var heightFit = targetH / h;
+
+    // compute a scale for best fit and apply it
+    var scale = widthFit > heightFit ? heightFit : widthFit;
+
+    w = parseInt(w * scale, 10);
+    h = parseInt(h * scale, 10);
+    return { w, h };
+  };
   var scaleBy = 1.1;
   const resizeStage = (stage, scaleinfo, deltaY) => {
     if (!stage) return;
@@ -328,6 +361,7 @@ const DrawAnnotations = (props) => {
     //   y: center.y - relatedTo.y * newScale,
     // };
 
+    setSaveposition({ ...saveposition, [sidetype]: newPos });
     stage.position(newPos);
     stage.batchDraw();
     return newScale;
@@ -338,7 +372,12 @@ const DrawAnnotations = (props) => {
     const newScale = resizeStage(stage, null, e.evt.deltaY);
     //dispatch(globalVariable({ scale: parseInt(newScale * 30) }));
   };
-
+  const handleDragEnd = (e) => {
+    const stage = e.target.getStage();
+    e.evt.preventDefault();
+    var pointer = stage.getPointerPosition();
+    console.log(pointer);
+  };
   //#endregion
   const selectRect = (e) => {
     e.evt.preventDefault();
@@ -370,16 +409,16 @@ const DrawAnnotations = (props) => {
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
         onWheel={handleWheel}
-        width={window.innerWidth}
-        height={window.innerHeight}
+        onDragEnd={handleDragEnd}
+        width={window.innerWidth - 200}
+        height={window.innerHeight - 223}
         draggable={draggable}
         ref={stageRef}
         id="stage"
-        style={{ border: "solid 1px black" }}
       >
         <Layer>
-          <group style={{ border: "solid 1px red", margin: 5 }}>
-            <LionImage imgurl={originimg} />
+          <group>
+            <LionImage originimg={originimg} stage={stageRef.current} />
             {annotationsToDraw &&
               annotationsToDraw.map((value, i) => {
                 return (

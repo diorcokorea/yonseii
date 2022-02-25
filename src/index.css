@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-y: hidden;
 }
 .heading {
   display: grid;
@@ -37,6 +38,7 @@ body {
   grid-gap: 20px;
   margin: 20px;
 }
+
 .uploadform {
   text-align: left;
 }
