@@ -8,6 +8,7 @@ const globalVar = {
   draggable: true,
   readtype: "",
   sidetype: "", //nude, added
+  positionbysidetype: { nude: {}, added: {} },
   drawtype: [true, true, true],
   currentShape: null,
   counting: null,

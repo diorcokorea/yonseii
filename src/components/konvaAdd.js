@@ -62,6 +62,9 @@ const DrawAnnotations = (props) => {
   const scale = useSelector((state) => state.global.scale);
   const drawtype = useSelector((state) => state.global.drawtype);
   const sidetype = useSelector((state) => state.global.sidetype);
+  const positionbysidetype = useSelector(
+    (state) => state.global.positionbysidetype
+  );
   const position = useSelector((state) => state.global.position);
   const originurl = useSelector((state) => state.global.originurl);
   const originimg = useSelector((state) => state.global.originimg);
@@ -91,6 +94,12 @@ const DrawAnnotations = (props) => {
       dispatch(
         globalVariable({
           counting: { normal: rtn.normal, abnormal: rtn.abnormal },
+        })
+      );
+      var pointer = stageRef.current.getPointerPosition();
+      dispatch(
+        globalVariable({
+          positionbysidetype: { ...positionbysidetype, [sidetype]: pointer },
         })
       );
     }
@@ -138,7 +147,25 @@ const DrawAnnotations = (props) => {
       setAnnotationsToDraw([]);
     }, 100);
   }, [originimg]);
+  useEffect(() => {
+    //saveposition
+    // var newPos = {
+    //   x: center.x - relatedTo.x * newScale,
+    //   y: center.y - relatedTo.y * newScale,
+    // // };
+    // saveposition[sidetype]
+    // setSaveposition({ ...saveposition, [sidetype]: newPos });
 
+    if (saveposition?.[sidetype]) {
+      const info = saveposition[sidetype];
+      stageRef.current.scale({
+        x: info.scale,
+        y: info.scale,
+      });
+      stageRef.current.position({ x: info.x, y: info.y });
+      stageRef.current.batchDraw();
+    }
+  }, [sidetype]);
   const drawByType = (rdata) => {
     let rtn = [];
     if (drawtype[2]) {
@@ -361,7 +388,10 @@ const DrawAnnotations = (props) => {
     //   y: center.y - relatedTo.y * newScale,
     // };
 
-    setSaveposition({ ...saveposition, [sidetype]: newPos });
+    setSaveposition({
+      ...saveposition,
+      [sidetype]: { ...newPos, scale: stage.scaleX() },
+    });
     stage.position(newPos);
     stage.batchDraw();
     return newScale;
@@ -376,6 +406,12 @@ const DrawAnnotations = (props) => {
     const stage = e.target.getStage();
     e.evt.preventDefault();
     var pointer = stage.getPointerPosition();
+    // dispatch(
+    //   globalVariable({
+    //     positionbysidetype: { ...positionbysidetype, [sidetype]: pointer },
+    //   })
+    // );
+    setSaveposition({ ...saveposition, [sidetype]: pointer });
     console.log(pointer);
   };
   //#endregion
@@ -403,7 +439,7 @@ const DrawAnnotations = (props) => {
       </button>
       <button onClick={() => console.log(currentShape)}>currentShape</button>
       <button onClick={() => console.log(fillcolor)}>fillcolor</button>*/}
-
+      <button onClick={() => console.log(saveposition)}>saveposition</button>
       <Stage
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
