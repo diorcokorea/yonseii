@@ -11,7 +11,7 @@ import $ from "jquery";
 function pdfReport(data) {
   $.ajax({
     //url: "http://diorco2.iptime.org:99/pdfgen",
-    url: `${process.env.REACT_APP_SERVER}/pdgen`,
+    url: `${process.env.REACT_APP_SERVER}/pdfgen`,
     type: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
@@ -50,21 +50,20 @@ const addStroke = (data) => {
 };
 const LionImage = ({ originimg, stage }) => {
   const [image] = useImage(originimg);
-  console.log(image?.width);
-  if (stage) console.log(stage.getWidth());
+  lionsize = image;
+
   return <Image image={image} />;
 };
 let currentShape;
-
+let lionsize;
 const DrawAnnotations = (props) => {
   const dispatch = useDispatch();
   //dispatch(globalVariable({ display: "list" }));
   const scale = useSelector((state) => state.global.scale);
+  const scaleorigin = useSelector((state) => state.global.scaleorigin);
   const drawtype = useSelector((state) => state.global.drawtype);
+  const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
-  const positionbysidetype = useSelector(
-    (state) => state.global.positionbysidetype
-  );
   const position = useSelector((state) => state.global.position);
   const originurl = useSelector((state) => state.global.originurl);
   const originimg = useSelector((state) => state.global.originimg);
@@ -74,6 +73,8 @@ const DrawAnnotations = (props) => {
   const pdfrun = useSelector((state) => state.global.pdfrun);
   const contextinfo = useSelector((state) => state.global.contextinfo);
   const stageRef = React.useRef(null);
+  const imageRef = React.useRef(null);
+  const layerRef = React.useRef(null);
 
   const [imgObj] = useImage(originimg);
 
@@ -84,7 +85,11 @@ const DrawAnnotations = (props) => {
   const [fillcolor, setFillcolor] = useState();
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
   const [imgcenter, setImgcenter] = useState({});
-  const [saveposition, setSaveposition] = useState({});
+  const [saveposition, setSaveposition] = useState();
+  const [imgsize, setImgsize] = useState();
+  const [translate, setTranslate] = useState();
+  const [initScale, setInitScale] = useState();
+  const [initStageWidth, setInitStageWidth] = useState();
 
   useEffect(() => {
     if (position) {
@@ -96,18 +101,18 @@ const DrawAnnotations = (props) => {
           counting: { normal: rtn.normal, abnormal: rtn.abnormal },
         })
       );
-      var pointer = stageRef.current.getPointerPosition();
-      dispatch(
-        globalVariable({
-          positionbysidetype: { ...positionbysidetype, [sidetype]: pointer },
-        })
-      );
     }
   }, [position, drawtype]);
 
   useEffect(() => {
-    if (stageRef.current) resizeStage(stageRef.current, scale);
-  }, [scale]);
+    if (sidetype === "added") {
+      resizeStage(stageRef.current, scale);
+    } else resizeStage(imageRef.current, scaleorigin);
+  }, [scale, scaleorigin]);
+  useEffect(() => {
+    $("#srccontainer").hide();
+    $("#resultcontainer").show();
+  }, [readtype]);
   useEffect(() => {
     stageRef.current.on("click", (e) => {
       setShow(false);
@@ -116,11 +121,18 @@ const DrawAnnotations = (props) => {
         selectRect(e);
       } else setFillcolor(null);
     });
-    setImgcenter({
-      x: stageRef.current.getWidth() / 2,
-      y: stageRef.current.getWidth() / 2,
+    // window.addEventListener("resize", () => {
+    //   // fitStageIntoParentContainer();
+    //   // refreshImage("nude", false);
+    //   // refreshImage("added", false);
+    // });
+
+    window.addEventListener("resize", () => {
+      resize(stageRef.current);
+      refreshImage("added", true);
     });
-    console.log(stageRef.current.getWidth());
+    setInitStageWidth(stageRef.current.getWidth());
+    //refreshShape();
   }, []);
   useEffect(() => {
     if (triggerthumb) {
@@ -145,27 +157,149 @@ const DrawAnnotations = (props) => {
   useEffect(() => {
     setTimeout(() => {
       setAnnotationsToDraw([]);
-    }, 100);
+      $("#srccontainer").show();
+      $("#resultcontainer").hide();
+      layerRef.current.clear();
+      fitStageIntoParentContainer();
+      //resize();
+      refreshImage("nude", true);
+      refreshImage("added", true);
+      //setInitStageWidth(stageRef.current.getWidth());
+    }, 500);
   }, [originimg]);
   useEffect(() => {
-    //saveposition
-    // var newPos = {
-    //   x: center.x - relatedTo.x * newScale,
-    //   y: center.y - relatedTo.y * newScale,
-    // // };
-    // saveposition[sidetype]
-    // setSaveposition({ ...saveposition, [sidetype]: newPos });
-
-    if (saveposition?.[sidetype]) {
-      const info = saveposition[sidetype];
-      stageRef.current.scale({
-        x: info.scale,
-        y: info.scale,
-      });
-      stageRef.current.position({ x: info.x, y: info.y });
-      stageRef.current.batchDraw();
+    if (sidetype === "nude") {
+      $("#srccontainer").show();
+      $("#resultcontainer").hide();
+    } else {
+      $("#srccontainer").hide();
+      $("#resultcontainer").show();
     }
   }, [sidetype]);
+  // Fixed stage size
+  var SCENE_BASE_WIDTH = 800;
+  var SCENE_BASE_HEIGHT = 600;
+
+  // Max upscale
+  // var SCENE_MAX_WIDTH = 1920;
+  // var SCENE_MAX_HEIGHT = 1080;
+  var SCENE_MAX_WIDTH = window.innerWidth;
+  var SCENE_MAX_HEIGHT = window.innerHeight;
+
+  function resize(stg) {
+    // Get kinetic stage container div
+    var container = stg.container();
+
+    // Get container size
+    var containerSize = {
+      width: container.clientWidth,
+      height: container.clientHeight,
+    };
+
+    // Odd size can cause blurry picture due to subpixel rendering
+    if (containerSize.width % 2 !== 0) containerSize.width--;
+    if (containerSize.height % 2 !== 0) containerSize.height--;
+
+    // Resize stage
+    stg.size(containerSize);
+    // Scale stage
+    var scaleX =
+      Math.min(containerSize.width, SCENE_MAX_WIDTH) / SCENE_MAX_WIDTH;
+    var scaleY =
+      Math.min(containerSize.height, SCENE_MAX_HEIGHT) / SCENE_MAX_HEIGHT;
+
+    var minRatio = Math.min(scaleX, scaleY);
+    var scale = { x: minRatio, y: minRatio };
+
+    stg.scale(scale);
+
+    // Center stage
+    var stagePos = {
+      x: (containerSize.width - SCENE_BASE_WIDTH * minRatio) * 0.5,
+      y: (containerSize.height - SCENE_BASE_HEIGHT * minRatio) * 0.5,
+    };
+
+    stg.position(stagePos);
+
+    // Redraw stage
+    stg.batchDraw();
+  }
+
+  // Initially resize stage
+  // resizeStage();
+
+  // // Add event listeners to resize stage
+  // window.addEventListener('resize', resizeStage);
+  // window.addEventListener('orientationchange', resizeStage);
+
+  function fitStageIntoParentContainer() {
+    const sceneWidth = window.innerWidth - 200;
+    const sceneHeight = window.innerHeight - 223;
+
+    var container = document.querySelector("#srccontainer");
+
+    // now we need to fit stage into parent container
+    var containerWidth = container.offsetWidth;
+    var containerHeight = container.offsetHeight;
+
+    // but we also make the full scene visible
+    // so we need to scale all objects on canvas
+    var scalex = containerWidth / sceneWidth;
+    var scaley = containerHeight / sceneHeight;
+    // console.log(
+    //   "sceneWidth,containerWidth,scalex,sceneHeight, containerHeight, scaley",
+    //   sceneWidth,
+    //   containerWidth,
+    //   scalex,
+    //   sceneHeight,
+    //   containerHeight,
+    //   scaley
+    // );
+
+    stageRef.current.width(sceneWidth * scalex);
+    stageRef.current.height(sceneHeight * scalex);
+    stageRef.current.scale({ x: scalex, y: scalex });
+    imageRef.current.width(sceneWidth * scalex);
+    imageRef.current.height(sceneHeight * scalex);
+    imageRef.current.scale({ x: scalex, y: scalex });
+  }
+
+  const refreshImage = (type, runTrans) => {
+    if (!lionsize) {
+      console.log("no img yet");
+      return;
+    }
+    let stg = imageRef.current;
+    if (type === "added") stg = stageRef.current;
+
+    let width = stg.getWidth();
+    let height = stg.getHeight();
+
+    let img_width = lionsize.width;
+
+    let img_height = lionsize.height;
+
+    let min = Math.min(width, height);
+    let ratio = img_width > img_height ? img_width / min : img_height / min;
+
+    const transform = stg.getAbsoluteTransform();
+    const matrix = transform.getMatrix();
+
+    let trans = translate;
+    if (!trans && runTrans) {
+      trans = {
+        x: (width - img_width / ratio) / 2.0,
+        y: (height - img_height / ratio) / 2.0,
+      };
+      transform.translate(trans.x, trans.y);
+      setTranslate(trans);
+    }
+
+    transform.scale(1.0 / ratio, 1.0 / ratio);
+    setInitScale(1.0 / ratio);
+    stg.setAttrs(transform.decompose());
+  };
+
   const drawByType = (rdata) => {
     let rtn = [];
     if (drawtype[2]) {
@@ -214,10 +348,7 @@ const DrawAnnotations = (props) => {
     setShow(true);
   };
   const contextClick = (type) => {
-    console.log(currentShape.attrs);
-
     const id = currentShape.attrs?.id;
-    console.log(id);
     let posi = _.cloneDeep(position);
     var index = _.findIndex(posi, (o) => {
       return o.id === id;
@@ -231,7 +362,6 @@ const DrawAnnotations = (props) => {
         break;
       case "stable":
         obj.class = obj.class == 3 ? (obj.class = 31) : (obj.class = 1);
-        console.log(obj);
         posi.splice(index, 1, addStroke(obj));
         break;
       case "unstable":
@@ -261,7 +391,6 @@ const DrawAnnotations = (props) => {
       const sy = parseInt(newAnnotation[0].y);
       const { x, y } = event.target.getStage().getRelativePointerPosition();
       const idnum = parseInt(Math.random() * 100000);
-      console.log(idnum);
       const annotationToAdd = {
         x: sx,
         y: sy,
@@ -322,7 +451,7 @@ const DrawAnnotations = (props) => {
   //#endregion
 
   //#region
-  const fitScreen = () => {
+  const centerShape = () => {
     const padding = 5;
 
     var w = imgObj.width;
@@ -341,7 +470,7 @@ const DrawAnnotations = (props) => {
     h = parseInt(h * scale, 10);
     return { w, h };
   };
-  var scaleBy = 1.1;
+  var scaleBy = 0.25;
   const resizeStage = (stage, scaleinfo, deltaY) => {
     if (!stage) return;
     var oldScale = stage.scaleX();
@@ -358,9 +487,11 @@ const DrawAnnotations = (props) => {
     };
 
     var newScale;
-
-    if (scaleinfo) newScale = scaleinfo / 30;
-    else newScale = deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+    if (scaleinfo | (scaleinfo === 0))
+      newScale = initScale + scaleBy * scaleinfo;
+    else newScale = deltaY > 0 ? oldScale - scaleBy : oldScale + scaleBy;
+    //console.log("scaleinfo,newScale", scaleinfo, newScale);
+    if (newScale < initScale || newScale > initScale + scaleBy * 10) return;
     stage.scale({
       x: newScale,
       y: newScale,
@@ -370,23 +501,6 @@ const DrawAnnotations = (props) => {
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
     };
-
-    console.log(
-      "oldscale",
-      oldScale,
-      "newscale",
-      newScale,
-      "pointer",
-      pointer,
-      "mousePointTo",
-      mousePointTo,
-      "center",
-      center
-    );
-    // var newPos = {
-    //   x: center.x - relatedTo.x * newScale,
-    //   y: center.y - relatedTo.y * newScale,
-    // };
 
     setSaveposition({
       ...saveposition,
@@ -399,25 +513,42 @@ const DrawAnnotations = (props) => {
   const handleWheel = (e) => {
     const stage = e.target.getStage();
     e.evt.preventDefault();
+
     const newScale = resizeStage(stage, null, e.evt.deltaY);
-    //dispatch(globalVariable({ scale: parseInt(newScale * 30) }));
+
+    if ((newScale < initScale) | (newScale > initScale + scaleBy * 10)) return;
+    let scalesize;
+
+    if (Math.abs(newScale - initScale) < 0.00001) scalesize = 0;
+    else scalesize = parseInt((newScale - initScale) / scaleBy);
+    // console.log(
+    //   "scalesize,newScale, initScale",
+    //   scalesize,
+    //   newScale,
+    //   initScale
+    // );
+
+    if (scalesize >= 10) scalesize = 10;
+    if (scalesize <= 0) scalesize = 0;
+    if (sidetype === "added") {
+      dispatch(globalVariable({ scale: scalesize }));
+    } else {
+      dispatch(globalVariable({ scaleorigin: scalesize }));
+    }
   };
   const handleDragEnd = (e) => {
     const stage = e.target.getStage();
     e.evt.preventDefault();
     var pointer = stage.getPointerPosition();
-    // dispatch(
-    //   globalVariable({
-    //     positionbysidetype: { ...positionbysidetype, [sidetype]: pointer },
-    //   })
-    // );
-    setSaveposition({ ...saveposition, [sidetype]: pointer });
-    console.log(pointer);
+
+    setSaveposition({
+      ...saveposition,
+      [sidetype]: { ...pointer, scale: stage.scaleX() },
+    });
   };
   //#endregion
   const selectRect = (e) => {
     e.evt.preventDefault();
-    console.log(e.target, annotationsToDraw);
     localStorage.setItem(
       "selected",
       JSON.stringify({
@@ -433,27 +564,34 @@ const DrawAnnotations = (props) => {
 
   return (
     <>
-      {/* <button onClick={makeThumbImage}>click</button>
-      <button onClick={() => console.log("draggable", draggable)}>
-        draggable
-      </button>
-      <button onClick={() => console.log(currentShape)}>currentShape</button>
-      <button onClick={() => console.log(fillcolor)}>fillcolor</button>*/}
-      <button onClick={() => console.log(saveposition)}>saveposition</button>
-      <Stage
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onWheel={handleWheel}
-        onDragEnd={handleDragEnd}
-        width={window.innerWidth - 200}
-        height={window.innerHeight - 223}
-        draggable={draggable}
-        ref={stageRef}
-        id="stage"
-      >
-        <Layer>
-          <group>
+      <div id="srccontainer">
+        <Stage
+          onWheel={handleWheel}
+          onDragEnd={handleDragEnd}
+          width={window.innerWidth - 200}
+          height={window.innerHeight - 223}
+          draggable={draggable}
+          ref={imageRef}
+        >
+          <Layer ref={layerRef}>
+            <LionImage originimg={originimg} stage={imageRef.current} />
+          </Layer>
+        </Stage>
+      </div>
+
+      <div id="resultcontainer">
+        <Stage
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onWheel={handleWheel}
+          onDragEnd={handleDragEnd}
+          width={window.innerWidth - 200}
+          height={window.innerHeight - 223}
+          draggable={draggable}
+          ref={stageRef}
+        >
+          <Layer>
             <LionImage originimg={originimg} stage={stageRef.current} />
             {annotationsToDraw &&
               annotationsToDraw.map((value, i) => {
@@ -476,13 +614,21 @@ const DrawAnnotations = (props) => {
                   </>
                 );
               })}
-          </group>
-        </Layer>
-      </Stage>
+          </Layer>
+        </Stage>
+      </div>
 
       {show && (
         <ContextMenu position={anchorPoint} contextClick={contextClick} />
       )}
+      <button
+        onClick={() => {
+          layerRef.current.clear();
+          fitStageIntoParentContainer();
+        }}
+      >
+        layer;
+      </button>
     </>
   );
 };

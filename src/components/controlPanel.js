@@ -35,6 +35,8 @@ export const countGene = (data) => {
 const ImageForm = () => {
   const dispatch = useDispatch();
   const scale = useSelector((state) => state.global.scale);
+  const scaleorigin = useSelector((state) => state.global.scaleorigin);
+  const sidetype = useSelector((state) => state.global.sidetype);
   const draggable = useSelector((state) => state.global.draggable);
   const drawtype = useSelector((state) => state.global.drawtype);
   const position = useSelector((state) => state.global.position);
@@ -58,7 +60,8 @@ const ImageForm = () => {
         counting: { normal: "", abnormal: "" },
       })
     );
-    dispatch(globalVariable({ scale: 25 }));
+    dispatch(globalVariable({ scale: 0 }));
+    dispatch(globalVariable({ scaleorigin: 0 }));
     dispatch(globalVariable({ thumbimg: null }));
     dispatch(globalVariable({ readtype: null }));
     setIsStable(false);
@@ -188,7 +191,6 @@ const ImageForm = () => {
   };
   function reading(type) {
     setSpinshow(false);
-    console.log(imgname);
     $.ajax({
       //url: "http://diorco2.iptime.org:99/reading",
 
@@ -203,13 +205,10 @@ const ImageForm = () => {
       }),
       success: function (obj) {
         if (obj.success === true) {
-          console.log(obj);
           const result_json = JSON.parse(obj.result_json);
 
           const rtn = countGene(result_json);
           const resultwithid = addRect(result_json.results);
-
-          console.log(resultwithid);
           dispatch(
             globalVariable({
               counting: { normal: rtn.normal, abnormal: rtn.abnormal },
@@ -222,6 +221,7 @@ const ImageForm = () => {
           dispatch(globalVariable({ position: resultwithid }));
           dispatch(globalVariable({ drawtype: [true, true, true] }));
           dispatch(globalVariable({ readtype: type }));
+          dispatch(globalVariable({ sidetype: "added" }));
           dispatch(globalVariable({ triggerthumb: true }));
         } else {
           let message = "success error : " + obj.reason;
@@ -246,18 +246,13 @@ const ImageForm = () => {
         },
       })
     );
-    console.log($("#stage"));
-    // report(
-    //   {
-    //     image: thumbimg,
-    //     filepath: imgname,
-    //     classification: readtype,
-    //     result_json: JSON.stringify({ results: position }),
-    //     id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
-    //   }
-    // );
   };
-
+  const sliderChange = (value) => {
+    if (value <= 0) value = 0;
+    else if (value >= 10) value = 10;
+    if (sidetype === "nude") dispatch(globalVariable({ scaleorigin: value }));
+    else dispatch(globalVariable({ scale: value }));
+  };
   return (
     <>
       <div className="menutop">
@@ -318,19 +313,19 @@ const ImageForm = () => {
           <Row>
             <Col span={12}>
               <Slider
-                min={1}
-                max={100}
-                onChange={(value) => dispatch(globalVariable({ scale: value }))}
-                value={scale}
+                min={0}
+                max={10}
+                onChange={(value) => sliderChange(value)}
+                value={sidetype === "nude" ? scaleorigin : scale}
               />
             </Col>
             <Col span={4}>
               <InputNumber
-                min={1}
-                max={100}
+                min={0}
+                max={10}
                 style={{ margin: "0 16px" }}
-                value={scale}
-                onChange={(value) => dispatch(globalVariable({ scale: value }))}
+                value={sidetype === "nude" ? scaleorigin : scale}
+                onChange={(value) => sliderChange(value)}
               />
             </Col>
           </Row>
