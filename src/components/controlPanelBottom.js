@@ -2,12 +2,22 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
 import { Space, Input } from "antd";
-import { Button, Slider, Checkbox, Col, Row, InputNumber } from "antd";
+import { Button, Slider, Checkbox, Col, Row, notification, Modal } from "antd";
 import "antd/dist/antd.css";
 import "antd-button-color/dist/css/style.css";
-import { PlusOutlined, MinusOutlined, RedoOutlined } from "@ant-design/icons";
+import { AiOutlineDelete } from "react-icons/ai";
+import { BsBoundingBoxCircles } from "react-icons/bs";
+import { FiRotateCw } from "react-icons/fi";
+import PdfRender from "./pdfRender";
+import { PDFDownloadLink, PDFViewer, StyleSheet } from "@react-pdf/renderer";
 import _ from "lodash";
 
+const styles = StyleSheet.create({
+  viewer: {
+    width: window.innerWidth, //the pdf viewer will take up all of the width and height
+    height: window.innerHeight,
+  },
+});
 const ImageForm = () => {
   const dispatch = useDispatch();
   const scale = useSelector((state) => state.global.scale);
@@ -25,10 +35,15 @@ const ImageForm = () => {
   const [isUnstable, setIsUnstable] = useState(false);
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
+  const [isModal, setIsModal] = useState(false);
 
   useEffect(() => {
     setPlustype(!draggable);
   }, [draggable]);
+  useEffect(() => {
+    setIsStable(true);
+    setIsUnstable(true);
+  }, [thumbimg]);
 
   function checkOnchange(type) {
     switch (type) {
@@ -41,6 +56,8 @@ const ImageForm = () => {
         dispatch(
           globalVariable({ drawtype: [drawtype[0], !isUnstable, true] })
         );
+        break;
+      default:
         break;
     }
   }
@@ -83,82 +100,154 @@ const ImageForm = () => {
     if (sidetype === "nude") dispatch(globalVariable({ scaleorigin: value }));
     else dispatch(globalVariable({ scale: value }));
   };
-
+  const marks = {
+    0: "0",
+    1: "1",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "10",
+  };
+  const openNotification = () => {
+    notification.open({
+      message: "염색체 개수 초과",
+      description:
+        "염색체가 이미 46개 등록 되어 있습니다. 추가 등록을 원하시는 경우 선택/삭제 후 등록 부탁드립니다.",
+    });
+  };
+  const drawBox = () => {
+    const maxnum = counting?.normal + counting?.abnormal;
+    if (maxnum >= 46) openNotification();
+    else {
+      setPlustype(!plustype);
+      dispatch(globalVariable({ draggable: plustype }));
+    }
+  };
+  const handleModal = () => {
+    setIsModal(false);
+  };
   return (
-    <div className="menubottom">
-      <Row>
-        <Col span={12}>
-          <Slider
-            min={0}
-            max={10}
-            onChange={(value) => sliderChange(value)}
-            value={sidetype === "nude" ? scaleorigin : scale}
-          />
-        </Col>
-        <Col span={4}>
-          <InputNumber
-            min={0}
-            max={10}
-            style={{ margin: "0 16px" }}
-            value={sidetype === "nude" ? scaleorigin : scale}
-            onChange={(value) => sliderChange(value)}
-          />
-        </Col>
-      </Row>
-      <div>
-        <Checkbox onChange={() => checkOnchange("stable")} checked={isStable}>
-          정상
-        </Checkbox>
-        <Input
-          id="normal"
-          value={counting?.normal}
-          disUnstableled
-          style={{ width: "20%" }}
-        />
-        &nbsp;
-        <Checkbox
-          onChange={() => checkOnchange("unstable")}
-          checked={isUnstable}
+    <>
+      <div className="menubottom">
+        <Row>
+          <Col span={4}>
+            <label className="title">확대</label>
+          </Col>
+          <Col span={20}>
+            <Slider
+              min={0}
+              max={10}
+              onChange={(value) => sliderChange(value)}
+              marks={marks}
+              value={sidetype === "nude" ? scaleorigin : scale}
+            />
+          </Col>
+        </Row>
+
+        <div className={thumbimg ? "resultnumber" : "hideitem"}>
+          <div>
+            <Checkbox
+              className="checkbox-green"
+              onChange={() => checkOnchange("stable")}
+              checked={isStable}
+            >
+              정상
+            </Checkbox>
+          </div>
+          <div style={{ paddingTop: -5 }}>
+            <Input
+              id="normal"
+              value={counting?.normal}
+              style={{ height: 25 }}
+              disabled
+            />
+          </div>
+          <Checkbox
+            className="checkbox-green"
+            onChange={() => checkOnchange("unstable")}
+            checked={isUnstable}
+          >
+            이상
+          </Checkbox>
+          <div style={{ paddingTop: -5 }}>
+            <Input
+              id="abnormal"
+              value={counting?.abnormal}
+              disabled
+              style={{ height: 25 }}
+            />
+          </div>
+        </div>
+        <div className={!thumbimg && "hideitem"}>
+          <Space style={{ width: "100%" }}>
+            <Button
+              size="large"
+              title="마우스드래그로 Box를 추가할수 있습니다."
+              type={plustype ? "primary" : ""}
+              onClick={drawBox}
+              icon={<BsBoundingBoxCircles />}
+              style={{
+                backgroundColor: plustype ? "#2d4232" : "#00a041",
+                color: "white",
+              }}
+            />
+            <Button
+              icon={<AiOutlineDelete />}
+              type={minustype}
+              size="large"
+              style={{ backgroundColor: "#00a041", color: "white" }}
+              onClick={deleteSelected}
+            />
+            <Button
+              icon={<FiRotateCw />}
+              title="새로 입력한 Box를 초기화합니다."
+              size="large"
+              style={{ backgroundColor: "#00a041", color: "white" }}
+              onClick={removeAll}
+            />
+          </Space>
+        </div>
+        <div className={!thumbimg && "hideitem"}>
+          <Button
+            shape="round"
+            size="large"
+            style={{ backgroundColor: "#424242", color: "white" }}
+            onClick={reporting}
+          >
+            리포트 보기
+          </Button>
+        </div>
+      </div>
+      <div style={{ display: "none" }}>
+        <PDFDownloadLink
+          document={<PdfRender img={thumbimg} />}
+          fileName="somename.pdf"
         >
-          이상
-        </Checkbox>
-        <Input
-          id="abnormal"
-          value={counting?.abnormal}
-          disUnstableled
-          style={{ width: "20%" }}
-        />
+          {({ blob, url, loading, error }) =>
+            loading ? "Loading document..." : "Download now!"
+          }
+        </PDFDownloadLink>
+
+        <Button onClick={() => setIsModal(true)}>Show PDF</Button>
+        <Modal
+        title="Basic Modal"
+        visible={isModal}
+        onOk={handleModal}
+        onCancel={() => setIsModal(false)}
+        width={window.innerWidth}
+      >
+        <PDFViewer style={styles.viewer}>
+          <PdfRender img={thumbimg} />
+        </PDFViewer>
+      </Modal>
       </div>
-      <div>
-        <Space style={{ width: "100%" }}>
-          <Button
-            size="large"
-            title="마우스드래그로 Box를 추가할수 있습니다."
-            type={plustype ? "primary" : ""}
-            onClick={() => {
-              setPlustype(!plustype);
-              dispatch(globalVariable({ draggable: plustype }));
-            }}
-            icon={<PlusOutlined />}
-          />
-          <Button
-            icon={<MinusOutlined />}
-            type={minustype}
-            size="large"
-            onClick={deleteSelected}
-          />
-          <Button
-            icon={<RedoOutlined />}
-            title="새로 입력한 Box를 초기화합니다."
-            size="large"
-            onClick={removeAll}
-          />
-        </Space>
-      </div>
-      <Button shape="round" size="large" type="lightdark" onClick={reporting}>
-        리포트 보기
-      </Button>
-    </div>
+
+    </>
   );
 };
 

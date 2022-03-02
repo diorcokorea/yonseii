@@ -2,25 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
 import { Spin, Input } from "antd";
-import {
-  Button,
-  Popconfirm,
-  Modal,
-} from "antd";
+import { Button, Popconfirm } from "antd";
 import "antd/dist/antd.css";
 import "antd-button-color/dist/css/style.css";
 import $ from "jquery";
 import _ from "lodash";
 import addbtn from "../images/Add_btn.png";
-import PdfRender from "./pdfRender";
-import { PDFDownloadLink, PDFViewer, StyleSheet } from "@react-pdf/renderer";
 
-const styles = StyleSheet.create({
-  viewer: {
-    width: window.innerWidth, //the pdf viewer will take up all of the width and height
-    height: window.innerHeight,
-  },
-});
 export const countGene = (data) => {
   //let result_json = JSON.parse(input);
   const normal = _.filter(data, (o) => {
@@ -40,7 +28,6 @@ const ImageForm = () => {
 
   const [imgname, setImgname] = useState("");
   const [spinshow, setSpinshow] = useState(false);
-  const [isModal, setIsModal] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -52,7 +39,6 @@ const ImageForm = () => {
     dispatch(globalVariable({ scaleorigin: 0 }));
     dispatch(globalVariable({ thumbimg: null }));
     dispatch(globalVariable({ readtype: null }));
-
   }, [originimg]);
 
   function getBase64(file) {
@@ -65,7 +51,7 @@ const ImageForm = () => {
   }
   function fileUpload(e) {
     let URL = window.webkitURL || window.URL;
-    if (e.target.files.length == 0) return;
+    if (e.target.files.length === 0) return;
     let url = URL.createObjectURL(e.target.files[0]);
     let img = new Image();
     img.src = url;
@@ -96,6 +82,8 @@ const ImageForm = () => {
             return "red";
           case 3:
             return "#00A041";
+            default:
+              return null;
         }
       };
       return {
@@ -139,9 +127,7 @@ const ImageForm = () => {
           dispatch(globalVariable({ readtype: type }));
           dispatch(globalVariable({ sidetype: "added" }));
           dispatch(globalVariable({ triggerthumb: true }));
-        } else {
-          let message = "success error : " + obj.reason;
-        }
+        } 
       },
       error: function (e) {
         let message = "error : " + e;
@@ -149,10 +135,8 @@ const ImageForm = () => {
       },
     });
   }
- 
-  const handleModal = () => {
-    setIsModal(false);
-  };
+
+
   return (
     <>
       <div className="menutop">
@@ -165,6 +149,7 @@ const ImageForm = () => {
                 style={{ cursor: "pointer", width: "80" }}
               />
             </label>
+
             <input
               type="file"
               id="file"
@@ -174,6 +159,9 @@ const ImageForm = () => {
               className="uploadButton"
               onChange={fileUpload}
             />
+            <span style={{ paddingTop: 10 }}>
+              <label>파일명</label>
+            </span>
             <Input
               disabled
               id="file-path"
@@ -185,18 +173,7 @@ const ImageForm = () => {
         </form>
 
         <div style={{ textAlign: "right" }}>
-          <div>
-            <PDFDownloadLink
-              document={<PdfRender img={thumbimg} />}
-              fileName="somename.pdf"
-            >
-              {({ blob, url, loading, error }) =>
-                loading ? "Loading document..." : "Download now!"
-              }
-            </PDFDownloadLink>
 
-            <Button onClick={() => setIsModal(true)}>Show PDF</Button>
-          </div>
           <Popconfirm
             title="안정형 판독을 진행하시겠습니까?"
             onConfirm={() => confirm("stable")}
@@ -220,23 +197,13 @@ const ImageForm = () => {
           </Popconfirm>
         </div>
       </div>
-     
+
       {spinshow && (
         <div>
           <Spin size="large" />
         </div>
       )}
-      <Modal
-        title="Basic Modal"
-        visible={isModal}
-        onOk={handleModal}
-        onCancel={() => setIsModal(false)}
-        width={window.innerWidth}
-      >
-        <PDFViewer style={styles.viewer}>
-          <PdfRender img={thumbimg} />
-        </PDFViewer>
-      </Modal>
+
     </>
   );
 };

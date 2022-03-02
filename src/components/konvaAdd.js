@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
 import { Stage, Layer, Rect, Image } from "react-konva";
 import ContextMenu from "./contextmenu";
-import { countGene } from "./controlPanel";
+import { countGene } from "./controlPanelTop";
 import useImage from "use-image";
 import _ from "lodash";
 import $ from "jquery";
@@ -42,6 +42,8 @@ const addStroke = (data) => {
         return "red";
       case 3:
         return "#00A041";
+      default:
+        return null;
     }
   };
   return {
@@ -57,6 +59,7 @@ const LionImage = ({ originimg, stage }) => {
 };
 let currentShape;
 let lionsize;
+let contentwidth = window.innerWidth - 270;
 const DrawAnnotations = (props) => {
   const dispatch = useDispatch();
   //dispatch(globalVariable({ display: "list" }));
@@ -66,10 +69,8 @@ const DrawAnnotations = (props) => {
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
   const position = useSelector((state) => state.global.position);
-  const originurl = useSelector((state) => state.global.originurl);
   const originimg = useSelector((state) => state.global.originimg);
   const draggable = useSelector((state) => state.global.draggable);
-  const counting = useSelector((state) => state.global.counting);
   const triggerthumb = useSelector((state) => state.global.triggerthumb);
   const pdfrun = useSelector((state) => state.global.pdfrun);
   const contextinfo = useSelector((state) => state.global.contextinfo);
@@ -77,20 +78,15 @@ const DrawAnnotations = (props) => {
   const imageRef = React.useRef(null);
   const layerRef = React.useRef(null);
 
-  const [imgObj] = useImage(originimg);
-
   const [annotations, setAnnotations] = useState([]);
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
   const [show, setShow] = useState(false);
   const [fillcolor, setFillcolor] = useState();
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  const [imgcenter, setImgcenter] = useState({});
   const [saveposition, setSaveposition] = useState();
-  const [imgsize, setImgsize] = useState();
   const [translate, setTranslate] = useState();
   const [initScale, setInitScale] = useState();
-  const [initStageWidth, setInitStageWidth] = useState();
 
   useEffect(() => {
     if (position) {
@@ -122,18 +118,11 @@ const DrawAnnotations = (props) => {
         selectRect(e);
       } else setFillcolor(null);
     });
-    // window.addEventListener("resize", () => {
-    //   // fitStageIntoParentContainer();
-    //   // refreshImage("nude", false);
-    //   // refreshImage("added", false);
-    // });
 
     window.addEventListener("resize", () => {
       resize(stageRef.current);
       refreshImage("added", true);
     });
-    setInitStageWidth(stageRef.current.getWidth());
-    //refreshShape();
   }, []);
   useEffect(() => {
     if (triggerthumb) {
@@ -162,10 +151,8 @@ const DrawAnnotations = (props) => {
       $("#resultcontainer").hide();
       if (layerRef.current) layerRef.current.clear();
       fitStageIntoParentContainer();
-      //resize();
       refreshImage("nude", true);
       refreshImage("added", true);
-      //setInitStageWidth(stageRef.current.getWidth());
     }, 500);
   }, [originimg]);
   useEffect(() => {
@@ -184,11 +171,12 @@ const DrawAnnotations = (props) => {
   // Max upscale
   // var SCENE_MAX_WIDTH = 1920;
   // var SCENE_MAX_HEIGHT = 1080;
-  var SCENE_MAX_WIDTH = window.innerWidth;
+  var SCENE_MAX_WIDTH = contentwidth;
   var SCENE_MAX_HEIGHT = window.innerHeight;
 
   function resize(stg) {
     // Get kinetic stage container div
+    if (!stg) return;
     var container = stg.container();
 
     // Get container size
@@ -234,19 +222,18 @@ const DrawAnnotations = (props) => {
   // window.addEventListener('orientationchange', resizeStage);
 
   function fitStageIntoParentContainer() {
-    const sceneWidth = window.innerWidth - 200;
+    const sceneWidth = contentwidth;
     const sceneHeight = window.innerHeight - 223;
 
     var container = document.querySelector("#srccontainer");
 
     // now we need to fit stage into parent container
-    var containerWidth = container.offsetWidth;
-    var containerHeight = container.offsetHeight;
-
+    var containerWidth = container?.offsetWidth;
+    var containerHeight = container?.offsetHeight;
+    if (!containerWidth) return;
     // but we also make the full scene visible
     // so we need to scale all objects on canvas
     var scalex = containerWidth / sceneWidth;
-    var scaley = containerHeight / sceneHeight;
     // console.log(
     //   "sceneWidth,containerWidth,scalex,sceneHeight, containerHeight, scaley",
     //   sceneWidth,
@@ -272,7 +259,7 @@ const DrawAnnotations = (props) => {
     }
     let stg = imageRef.current;
     if (type === "added") stg = stageRef.current;
-
+    if (!stg) return;
     let width = stg.getWidth();
     let height = stg.getHeight();
 
@@ -284,7 +271,6 @@ const DrawAnnotations = (props) => {
     let ratio = img_width > img_height ? img_width / min : img_height / min;
 
     const transform = stg.getAbsoluteTransform();
-    const matrix = transform.getMatrix();
 
     let trans = translate;
     if (!trans && runTrans) {
@@ -305,19 +291,19 @@ const DrawAnnotations = (props) => {
     let rtn = [];
     if (drawtype[2]) {
       const stableArr = _.filter(rdata, function (o) {
-        return o.class == 3 || o.class == 31 || o.class == 32;
+        return o.class === 3 || o.class === 31 || o.class === 32;
       });
       rtn = [...rtn, ...stableArr];
     }
     if (drawtype[0]) {
       const stableArr = _.filter(rdata, function (o) {
-        return o.class == 1 || o.class == 31;
+        return o.class === 1 || o.class === 31;
       });
       rtn = [...rtn, ...stableArr];
     }
     if (drawtype[1]) {
       const stableArr = _.filter(rdata, function (o) {
-        return o.class == 2 || o.class == 32;
+        return o.class === 2 || o.class === 32;
       });
       rtn = [...rtn, ...stableArr];
     }
@@ -335,7 +321,6 @@ const DrawAnnotations = (props) => {
     e.evt.preventDefault(true); // NB!!!! Remember the ***TRUE***
 
     const mousePosition = e.target.getStage().getPointerPosition();
-    const stage = e.target.getStage();
     currentShape = e.target;
     //dispatch(globalVariable({ currentShape: e.target }));
     // setAnchorPoint({
@@ -362,12 +347,14 @@ const DrawAnnotations = (props) => {
         posi.splice(index, 1);
         break;
       case "stable":
-        obj.class = obj.class == 3 ? (obj.class = 31) : (obj.class = 1);
+        obj.class = obj.class === 3 ? (obj.class = 31) : (obj.class = 1);
         posi.splice(index, 1, addStroke(obj));
         break;
       case "unstable":
-        obj.class = obj.class == 3 ? (obj.class = 32) : (obj.class = 2);
+        obj.class = obj.class === 3 ? (obj.class = 32) : (obj.class = 2);
         posi.splice(index, 1, addStroke(obj));
+        break;
+      default:
         break;
     }
 
@@ -452,25 +439,6 @@ const DrawAnnotations = (props) => {
   //#endregion
 
   //#region
-  const centerShape = () => {
-    const padding = 5;
-
-    var w = imgObj.width;
-    var h = imgObj.height;
-    var targetW = stageRef.current.getWidth() - 2 * padding;
-    var targetH = stageRef.current.getHeight() - 2 * padding;
-
-    // compute the ratios of image dimensions to aperture dimensions
-    var widthFit = targetW / w;
-    var heightFit = targetH / h;
-
-    // compute a scale for best fit and apply it
-    var scale = widthFit > heightFit ? heightFit : widthFit;
-
-    w = parseInt(w * scale, 10);
-    h = parseInt(h * scale, 10);
-    return { w, h };
-  };
   var scaleBy = 0.25;
   const resizeStage = (stage, scaleinfo, deltaY) => {
     if (!stage) return;
@@ -478,10 +446,7 @@ const DrawAnnotations = (props) => {
 
     var pointer = stage.getPointerPosition();
     if (!pointer) return;
-    var center = {
-      x: stage.width() / 2,
-      y: stage.height() / 2,
-    };
+
     var mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
@@ -522,12 +487,6 @@ const DrawAnnotations = (props) => {
 
     if (Math.abs(newScale - initScale) < 0.00001) scalesize = 0;
     else scalesize = parseInt((newScale - initScale) / scaleBy);
-    // console.log(
-    //   "scalesize,newScale, initScale",
-    //   scalesize,
-    //   newScale,
-    //   initScale
-    // );
 
     if (scalesize >= 10) scalesize = 10;
     if (scalesize <= 0) scalesize = 0;
@@ -569,7 +528,7 @@ const DrawAnnotations = (props) => {
         <Stage
           onWheel={handleWheel}
           onDragEnd={handleDragEnd}
-          width={window.innerWidth - 200}
+          width={contentwidth}
           height={window.innerHeight - 223}
           draggable={draggable}
           ref={imageRef}
@@ -587,7 +546,7 @@ const DrawAnnotations = (props) => {
           onMouseMove={handleMouseMove}
           onWheel={handleWheel}
           onDragEnd={handleDragEnd}
-          width={window.innerWidth - 200}
+          width={contentwidth}
           height={window.innerHeight - 223}
           draggable={draggable}
           ref={stageRef}
@@ -604,12 +563,12 @@ const DrawAnnotations = (props) => {
                       id={value.id}
                       width={value.width}
                       height={value.height}
-                      fill={fillcolor === value.id ? "yellow" : "transparent"}
+                      //fill={fillcolor === value.id ? "yellow" : "transparent"}
                       stroke={value.stroke ? value.stroke : "green"}
-                      //strokeWidth={fillcolor === value.x ? 7 : 2}
+                      strokeWidth={fillcolor === value.id ? 5 : 1}
                       name="rect"
                       onContextMenu={handleContextMenu}
-                      // onClick={selectRect}
+                      onClick={selectRect}
                       centeredScaling={true}
                     />
                   </>
@@ -622,7 +581,6 @@ const DrawAnnotations = (props) => {
       {show && (
         <ContextMenu position={anchorPoint} contextClick={contextClick} />
       )}
-
     </>
   );
 };

@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
+import { useSelector } from "react-redux";
 import Topmenu from "./components/header";
-import ControlPanelTop from "./components/controlPanelTop";
 import ControlPanelBottom from "./components/controlPanelBottom";
+import ControlPanelTop from "./components/controlPanelTop";
 import Sidebar from "./components/sidebar";
 import KonvaAdd from "./components/konvaAdd";
-import { Divider, Layout } from "antd";
 import "antd/dist/antd.css";
 
-const { Header, Footer, Content } = Layout;
-
 function App() {
+  const originimg = useSelector((state) => state.global.originimg);
   return (
     <div>
       <div>
@@ -19,8 +18,10 @@ function App() {
 
       <div className="content">
         <Sidebar />
-        <ControlPanelBottom />
-        <KonvaAdd />
+        <div>
+          {originimg && <ControlPanelBottom />}
+          <KonvaAdd />
+        </div>
       </div>
       <div>Footer</div>
     </div>

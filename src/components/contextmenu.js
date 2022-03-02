@@ -10,9 +10,9 @@ const ContextMenu = ({ position, contextClick }) => {
           left: position.x,
         }}
       >
-        <li onClick={() => contextClick("stable")}>안정형</li>
-        <li onClick={() => contextClick("unstable")}>불안정형</li>
-        <li onClick={() => contextClick("delete")}>Delete</li>
+        <li onClick={() => contextClick("stable")}>정상</li>
+        <li onClick={() => contextClick("unstable")}>이상</li>
+        <li onClick={() => contextClick("delete")}>삭제</li>
       </ul>
     </div>
   );
