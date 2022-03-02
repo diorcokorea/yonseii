@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import { Stage, Layer, Transformer, Rect, Image } from "react-konva";
+import { Stage, Layer, Rect, Image } from "react-konva";
 import ContextMenu from "./contextmenu";
 import { countGene } from "./controlPanel";
 import useImage from "use-image";
 import _ from "lodash";
 import $ from "jquery";
+//import Pdf from "./pdfView"
 
 function pdfReport(data) {
   $.ajax({
@@ -159,7 +160,7 @@ const DrawAnnotations = (props) => {
       setAnnotationsToDraw([]);
       $("#srccontainer").show();
       $("#resultcontainer").hide();
-      layerRef.current.clear();
+      if (layerRef.current) layerRef.current.clear();
       fitStageIntoParentContainer();
       //resize();
       refreshImage("nude", true);
@@ -621,14 +622,7 @@ const DrawAnnotations = (props) => {
       {show && (
         <ContextMenu position={anchorPoint} contextClick={contextClick} />
       )}
-      <button
-        onClick={() => {
-          layerRef.current.clear();
-          fitStageIntoParentContainer();
-        }}
-      >
-        layer;
-      </button>
+
     </>
   );
 };

@@ -65,24 +65,6 @@ const Sidebar = () => {
           />
         </Card>
       </Space>
-      {/* 
-            <Card style={{ width: 160, marginTop: 16 }} loading={true}>
-              <Meta
-                avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
-                title="Card title"
-                description="This is the description"
-              />
-            </Card>
-
-            <Card style={{ width: 160, marginTop: 16 }}>
-              <Skeleton loading={true} avatar active>
-                <Meta
-                  avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
-                  title="Card title"
-                  description="This is the description"
-                />
-              </Skeleton>
-            </Card> */}
     </div>
   );
 };
