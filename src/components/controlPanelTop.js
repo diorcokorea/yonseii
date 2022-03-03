@@ -58,8 +58,10 @@ const ImageForm = () => {
     img.onload = function () {
       setImgname(e.target.files[0].name);
       getBase64(e.target.files[0]).then((data) => {
+        
         dispatch(globalVariable({ originimg: data }));
         dispatch(globalVariable({ thumbimg: null }));
+        dispatch(globalVariable({ sidetype: "nude" }));
       });
     };
   }
@@ -82,8 +84,8 @@ const ImageForm = () => {
             return "red";
           case 3:
             return "#00A041";
-            default:
-              return null;
+          default:
+            return null;
         }
       };
       return {
@@ -127,7 +129,7 @@ const ImageForm = () => {
           dispatch(globalVariable({ readtype: type }));
           dispatch(globalVariable({ sidetype: "added" }));
           dispatch(globalVariable({ triggerthumb: true }));
-        } 
+        }
       },
       error: function (e) {
         let message = "error : " + e;
@@ -136,9 +138,9 @@ const ImageForm = () => {
     });
   }
 
-
   return (
     <>
+
       <div className="menutop">
         <form>
           <div className="file-input-wrapper">
@@ -153,9 +155,6 @@ const ImageForm = () => {
             <input
               type="file"
               id="file"
-              //accept=".jpg"
-              //multiple
-              //onChange={handleFileChange}
               className="uploadButton"
               onChange={fileUpload}
             />
@@ -173,7 +172,6 @@ const ImageForm = () => {
         </form>
 
         <div style={{ textAlign: "right" }}>
-
           <Popconfirm
             title="안정형 판독을 진행하시겠습니까?"
             onConfirm={() => confirm("stable")}
@@ -199,11 +197,10 @@ const ImageForm = () => {
       </div>
 
       {spinshow && (
-        <div>
+        <div className="spinwheel">
           <Spin size="large" />
         </div>
       )}
-
     </>
   );
 };

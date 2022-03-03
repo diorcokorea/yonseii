@@ -4,7 +4,7 @@ import { Typography, Space } from "antd";
 import { globalVariable } from "../actions";
 import noimage from "../images/Side.png";
 
-const { Title,  } = Typography;
+const { Title } = Typography;
 
 const Sidebar = () => {
   const dispatch = useDispatch();
@@ -12,6 +12,7 @@ const Sidebar = () => {
   const thumb = useSelector((state) => state.global.thumbimg);
   const originimg = useSelector((state) => state.global.originimg);
   const readtype = useSelector((state) => state.global.readtype);
+  const sidetype = useSelector((state) => state.global.sidetype);
   const [imgthumb, setImgthumb] = useState(noimage);
   const [imgorigin, setImgorigin] = useState(noimage);
   const [selected1, setSelected1] = useState(false);
@@ -23,7 +24,19 @@ const Sidebar = () => {
     if (!originimg) setImgorigin(noimage);
     else setImgorigin(originimg);
   }, [thumb, originimg]);
-
+  useEffect(() => {
+    switch (sidetype) {
+      case "added":
+        setSelected1(false);
+        setSelected2(true);
+        break;
+      case "nude":
+      default:
+        setSelected1(true);
+        setSelected2(false);
+        break;
+    }
+  }, [sidetype]);
   return (
     <div className="sidebar">
       <Space direction="vertical">
@@ -40,7 +53,7 @@ const Sidebar = () => {
               setSelected2(false);
             }}
           >
-            <img src={imgorigin} width={"100%"} description="" alt=""/>
+            <img src={imgorigin} width={"100%"} description="" alt="" />
           </div>
         </div>
         <div className="box">
@@ -57,15 +70,21 @@ const Sidebar = () => {
             </Space>
           </div>
           <div
-            className={selected2 ? "sideclicked" : "sidemenu"}
+            className={selected2 ? "sideclicked" : "sidemenu1"}
             onClick={() => {
               dispatch(globalVariable({ drawtype: [true, true, true] }));
               dispatch(globalVariable({ sidetype: "added" }));
               setSelected1(false);
               setSelected2(true);
-            }} 
+            }}
           >
-            <img crossOrigin="anonymous" src={imgthumb} width={220} alt=""/>
+            <img
+              crossOrigin="anonymous"
+              src={imgthumb}
+              width={220}
+              height={210}
+              alt=""
+            />
           </div>
         </div>
       </Space>

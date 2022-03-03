@@ -139,7 +139,13 @@ li:hover {
   background-color: white;
   clear: both;
 }
-.sidemenu:hover {
+.sidemenu1 {
+  width: 220px;
+  height: 210px;
+  background-color: white;
+  clear: both;
+}
+.sidemenu1 .sidemenu:hover {
   opacity: 0.7;
 }
 .sideclicked {
