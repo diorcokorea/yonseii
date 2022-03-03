@@ -84,7 +84,7 @@ const DrawAnnotations = (props) => {
   const [show, setShow] = useState(false);
   const [fillcolor, setFillcolor] = useState();
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  const [saveposition, setSaveposition] = useState();
+  // const [saveposition, setSaveposition] = useState();
   const [translate, setTranslate] = useState();
   const [initScale, setInitScale] = useState();
   const [savedTransform, setSavedTransform] = useState();
@@ -107,6 +107,7 @@ const DrawAnnotations = (props) => {
       };
       if (sidetype === "nude") setSize2(info);
       else setSize1(info);
+      refreshImage(sidetype, true);
     };
 
     window.addEventListener("resize", checkSize);
@@ -477,6 +478,7 @@ const DrawAnnotations = (props) => {
     var pointer = stage.getPointerPosition();
     if (!pointer) return;
 
+    //마우스 포인터에 따른 액션으로 하려면 cernter, relatedTo대신 사용
     // var mousePointTo = {
     //   x: (pointer.x - stage.x()) / oldScale,
     //   y: (pointer.y - stage.y()) / oldScale,
@@ -507,15 +509,16 @@ const DrawAnnotations = (props) => {
       x: center.x - relatedTo.x * newScale,
       y: center.y - relatedTo.y * newScale,
     };
+    //마우스 포인터 사용시교체
     // var newPos = {
     //   x: pointer.x - mousePointTo.x * newScale,
     //   y: pointer.y - mousePointTo.y * newScale,
     // };
 
-    setSaveposition({
-      ...saveposition,
-      [sidetype]: { ...newPos, scale: stage.scaleX() },
-    });
+    // setSaveposition({
+    //   ...saveposition,
+    //   [sidetype]: { ...newPos, scale: stage.scaleX() },
+    // });
     stage.position(newPos);
     stage.batchDraw();
     return newScale;
@@ -550,10 +553,10 @@ const DrawAnnotations = (props) => {
     e.evt.preventDefault();
     var pointer = stage.getPointerPosition();
 
-    setSaveposition({
-      ...saveposition,
-      [sidetype]: { ...pointer, scale: stage.scaleX() },
-    });
+    // setSaveposition({
+    //   ...saveposition,
+    //   [sidetype]: { ...pointer, scale: stage.scaleX() },
+    // });
   };
   const centerTransform = () => {
     const transform = stageRef.current.getAbsoluteTransform();
@@ -598,7 +601,7 @@ const DrawAnnotations = (props) => {
 
   return (
     <div id="stage-parent">
-      <button
+      {/* <button
         onClick={() =>
           console.log(
             imageRef.current.getAbsoluteTransform(),
@@ -612,7 +615,8 @@ const DrawAnnotations = (props) => {
       <button onClick={centerTransform}>transformtest</button>
       <button onClick={imageTransform}>imageformtest</button>
       <button onClick={saveTransform}>saveTransform</button>
-      <button onClick={resetTransform}>resetTransform</button>
+      <button onClick={resetTransform}>resetTransform</button> */}
+
       <div id="srccontainer">
         <Stage
           onWheel={handleWheel}

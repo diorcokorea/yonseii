@@ -135,10 +135,12 @@ const ImageForm = () => {
     <>
       <div className="menubottom">
         <Row>
-          <Col span={4}>
-            <label className="title">확대</label>
+          <Col flex="60px">
+            <div className="title">
+              <label>확대</label>
+            </div>
           </Col>
-          <Col span={20}>
+          <Col flex="auto">
             <Slider
               min={0}
               max={10}
@@ -235,18 +237,17 @@ const ImageForm = () => {
 
         <Button onClick={() => setIsModal(true)}>Show PDF</Button>
         <Modal
-        title="Basic Modal"
-        visible={isModal}
-        onOk={handleModal}
-        onCancel={() => setIsModal(false)}
-        width={window.innerWidth}
-      >
-        <PDFViewer style={styles.viewer}>
-          <PdfRender img={thumbimg} />
-        </PDFViewer>
-      </Modal>
+          title="Basic Modal"
+          visible={isModal}
+          onOk={handleModal}
+          onCancel={() => setIsModal(false)}
+          width={window.innerWidth}
+        >
+          <PDFViewer style={styles.viewer}>
+            <PdfRender img={thumbimg} />
+          </PDFViewer>
+        </Modal>
       </div>
-
     </>
   );
 };
