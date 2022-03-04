@@ -157,13 +157,14 @@ const ImageForm = () => {
               onChange={fileUpload}
             />
             <span style={{ paddingTop: 10 }}>
-              <label>파일명</label>
+              <label>파일명sss</label>
             </span>
             <Input
               disabled
               id="file-path"
               size="large"
               type="text"
+              className="inputbox"
               value={imgname}
             />
           </div>
