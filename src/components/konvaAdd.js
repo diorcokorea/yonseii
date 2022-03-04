@@ -269,7 +269,7 @@ const DrawAnnotations = (props) => {
     let height = stg.getHeight();
 
     width = window.innerWidth - 270;
-    height = window.innerHeight - 220;
+    height = window.innerHeight - 203;
 
     let img_width = lionsize.width;
     let img_height = lionsize.height;
@@ -292,7 +292,7 @@ const DrawAnnotations = (props) => {
       setTranslate(trans);
     }
     transform.m[4] = (width - img_width / ratio) / 2.0;
-    transform.m[5] = (height - img_height / ratio) / 2.0;
+    transform.m[5] = (height - img_height / ratio) / 2.0 - 40;
     transform.m[0] = transform.m[3] = 1 / ratio;
     //transform.scale(1.0 / ratio, 1.0 / ratio);
     setInitScale(1.0 / ratio);

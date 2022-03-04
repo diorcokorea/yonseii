@@ -58,8 +58,9 @@ const ImageForm = () => {
     img.src = url;
     img.onload = function () {
       getBase64(e.target.files[0]).then((data) => {
+        const dt = _.cloneDeep(data);
         dispatch(globalVariable({ imgname: e.target.files[0].name }));
-        dispatch(globalVariable({ originimg: data }));
+        dispatch(globalVariable({ originimg: dt }));
         dispatch(globalVariable({ thumbimg: null }));
         dispatch(globalVariable({ sidetype: "nude" }));
       });
@@ -195,7 +196,7 @@ const ImageForm = () => {
 
       {spinshow && (
         <div className="spinwheel">
-          <Spin size="large" />
+          <Spin size="large" tip="Loading..." />
         </div>
       )}
     </>

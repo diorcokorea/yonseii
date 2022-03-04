@@ -18,6 +18,7 @@ const styles = StyleSheet.create({
     height: window.innerHeight,
   },
 });
+let originposition;
 const ImageForm = () => {
   const dispatch = useDispatch();
   const scale = useSelector((state) => state.global.scale);
@@ -36,7 +37,9 @@ const ImageForm = () => {
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
   const [isModal, setIsModal] = useState(false);
-
+  useEffect(() => {
+    originposition = _.cloneDeep(position);
+  }, []);
   useEffect(() => {
     setPlustype(!draggable);
   }, [draggable]);
@@ -62,10 +65,10 @@ const ImageForm = () => {
     }
   }
   const removeAll = () => {
-    let origin = _.remove(position, function (n) {
-      return (n.class === 1) | (n.class === 2);
-    });
-    dispatch(globalVariable({ position: origin }));
+    // let origin = _.remove(position, function (n) {
+    //   return (n.class === 1) | (n.class === 2);
+    // });
+    dispatch(globalVariable({ position: originposition }));
   };
   const deleteSelected = () => {
     // let annotationsToDraw = JSON.parse(localStorage.getItem("annotation"));
