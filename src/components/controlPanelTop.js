@@ -159,13 +159,14 @@ const ImageForm = () => {
             <span style={{ paddingTop: 10 }}>
               <label>파일명</label>
             </span>
-            <Input
+            {/* <Input
               disabled
               id="file-path"
               size="large"
               type="text"
               value={imgname}
-            />
+            /> */}
+            <input className="fileInput" type="text" value={imgname}></input>
           </div>
         </form>
 
@@ -173,8 +174,8 @@ const ImageForm = () => {
           <Popconfirm
             title="안정형 판독을 진행하시겠습니까?"
             onConfirm={() => confirm("stable")}
-            okText="Yes"
-            cancelText="No"
+            okText="확인"
+            cancelText="취소"
           >
             <Button shape="round" size="large" type="success">
               안정형 판독
@@ -184,8 +185,8 @@ const ImageForm = () => {
           <Popconfirm
             title="불안정형 판독을 진행하시겠습니까?"
             onConfirm={() => confirm("unstable")}
-            okText="Yes"
-            cancelText="No"
+            okText="확인"
+            cancelText="취소"
           >
             <Button shape="round" size="large" type="success">
               불안정형 판독
