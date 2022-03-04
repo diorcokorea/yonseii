@@ -42,7 +42,7 @@ const MyPdf = ({ img }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
-          <Text>Heading #1</Text>
+          <Text>염색체 분석 리포트</Text>
         </View>
   
         <View style={styles.centerImage}>

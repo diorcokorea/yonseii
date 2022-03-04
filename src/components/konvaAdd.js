@@ -10,9 +10,10 @@ import $ from "jquery";
 //import Pdf from "./pdfView"
 
 function pdfReport(data) {
+  console.log(JSON.stringify(data));
   $.ajax({
-    url: "http://localhost:99/pdfgen",
-    //url: `${process.env.REACT_APP_SERVER}/pdfgen`,
+    //url: "http://localhost:99/pdfgen",
+    url: `${process.env.REACT_APP_SERVER}/pdfgen`,
     type: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
@@ -145,11 +146,11 @@ const DrawAnnotations = (props) => {
     if (triggerthumb) {
       const img = makeRectImage();
       dispatch(globalVariable({ triggerthumb: false }));
-      if (pdfrun) {
-        const pdfrun1 = { ...pdfrun, image: img };
-        pdfReport(pdfrun1);
-        dispatch(globalVariable({ pdfrun: null }));
-      }
+      // if (pdfrun) {
+      //   const pdfrun1 = { ...pdfrun, image: img };
+      //   pdfReport(pdfrun1);
+      //   dispatch(globalVariable({ pdfrun: null }));
+      // }
     }
   }, [triggerthumb]);
 

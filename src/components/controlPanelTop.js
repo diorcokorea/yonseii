@@ -27,7 +27,7 @@ const ImageForm = () => {
   const originimg = useSelector((state) => state.global.originimg);
   const imgname = useSelector((state) => state.global.imgname);
 
-//  const [imgname, setImgname] = useState("");
+  //  const [imgname, setImgname] = useState("");
   const [spinshow, setSpinshow] = useState(false);
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const ImageForm = () => {
     img.src = url;
     img.onload = function () {
       getBase64(e.target.files[0]).then((data) => {
-        dispatch(globalVariable({imgname:e.target.files[0].name}));
+        dispatch(globalVariable({ imgname: e.target.files[0].name }));
         dispatch(globalVariable({ originimg: data }));
         dispatch(globalVariable({ thumbimg: null }));
         dispatch(globalVariable({ sidetype: "nude" }));
@@ -102,9 +102,7 @@ const ImageForm = () => {
   function reading(type) {
     setSpinshow(false);
     $.ajax({
-      //url: "http://diorco2.iptime.org:99/reading",
-
-      url: `${process.env.REACT_APP_SERVER}/reading`,
+      url: `http://localhost:99/reading`,
       type: "POST",
       dataType: "json",
       contentType: "application/json; charset=utf-8",
@@ -140,7 +138,6 @@ const ImageForm = () => {
 
   return (
     <>
-
       <div className="menutop">
         <form>
           <div className="file-input-wrapper">
