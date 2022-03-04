@@ -11,8 +11,8 @@ import $ from "jquery";
 
 function pdfReport(data) {
   $.ajax({
-    //url: "http://diorco2.iptime.org:99/pdfgen",
-    url: `${process.env.REACT_APP_SERVER}/pdfgen`,
+    url: "http://localhost:99/pdfgen",
+    //url: `${process.env.REACT_APP_SERVER}/pdfgen`,
     type: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
@@ -26,8 +26,8 @@ function pdfReport(data) {
       }
     },
     error: function (e) {
-      let message = "error : " + e;
-      alert(message);
+      let message = "error : " + e.message;
+      console.log(message);
     },
   });
 }

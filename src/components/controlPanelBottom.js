@@ -28,18 +28,21 @@ const ImageForm = () => {
   const position = useSelector((state) => state.global.position);
   const counting = useSelector((state) => state.global.counting);
   const thumbimg = useSelector((state) => state.global.thumbimg);
+  const imgname = useSelector((state) => state.global.imgname);
 
-  const [imgname, setImgname] = useState("");
+  //const [imgname, setImgname] = useState("");
   const [readtype, setReadtype] = useState("stable");
   const [isStable, setIsStable] = useState(false);
   const [isUnstable, setIsUnstable] = useState(false);
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
   const [isModal, setIsModal] = useState(false);
+  const [posiorigin, setPosiorigin] = useState(position);
 
   useEffect(() => {
     setPlustype(!draggable);
   }, [draggable]);
+
   useEffect(() => {
     setIsStable(true);
     setIsUnstable(true);
@@ -62,10 +65,10 @@ const ImageForm = () => {
     }
   }
   const removeAll = () => {
-    let origin = _.remove(position, function (n) {
-      return (n.class === 1) | (n.class === 2);
-    });
-    dispatch(globalVariable({ position: origin }));
+    // let origin = _.remove(position, function (n) {
+    //   return (n.class === 1) | (n.class === 2);
+    // });
+    dispatch(globalVariable({ position: posiorigin }));
   };
   const deleteSelected = () => {
     // let annotationsToDraw = JSON.parse(localStorage.getItem("annotation"));

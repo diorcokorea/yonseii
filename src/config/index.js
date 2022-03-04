@@ -3,6 +3,7 @@ const globalVar = {
   scaleorigin: 0,
   showSpin: false,
   thumbimg: null,
+  imgname:null,
   originimg: null,
   originurl: null,
   position: null,

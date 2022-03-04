@@ -25,8 +25,9 @@ const ImageForm = () => {
   const dispatch = useDispatch();
   const thumbimg = useSelector((state) => state.global.thumbimg);
   const originimg = useSelector((state) => state.global.originimg);
+  const imgname = useSelector((state) => state.global.imgname);
 
-  const [imgname, setImgname] = useState("");
+//  const [imgname, setImgname] = useState("");
   const [spinshow, setSpinshow] = useState(false);
 
   useEffect(() => {
@@ -56,9 +57,8 @@ const ImageForm = () => {
     let img = new Image();
     img.src = url;
     img.onload = function () {
-      setImgname(e.target.files[0].name);
       getBase64(e.target.files[0]).then((data) => {
-        
+        dispatch(globalVariable({imgname:e.target.files[0].name}));
         dispatch(globalVariable({ originimg: data }));
         dispatch(globalVariable({ thumbimg: null }));
         dispatch(globalVariable({ sidetype: "nude" }));
