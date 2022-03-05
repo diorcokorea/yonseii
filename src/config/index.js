@@ -3,13 +3,13 @@ const globalVar = {
   scaleorigin: 0,
   showSpin: false,
   thumbimg: null,
-  imgname:null,
+  imgname: null,
   originimg: null,
   originurl: null,
   position: null,
   draggable: true,
   readtype: "",
-  sidetype: "", //nude, added
+  sidetype: "noimg", //nude, added
   drawtype: [true, true, true],
   currentShape: null,
   counting: null,

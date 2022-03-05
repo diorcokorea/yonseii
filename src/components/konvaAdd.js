@@ -7,6 +7,8 @@ import { countGene } from "./controlPanelTop";
 import useImage from "use-image";
 import _ from "lodash";
 import $ from "jquery";
+
+import noimg from "../images/Side.png";
 //import Pdf from "./pdfView"
 
 function pdfReport(data) {
@@ -82,7 +84,7 @@ const DrawAnnotations = (props) => {
   const [annotations, setAnnotations] = useState([]);
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState();
   const [fillcolor, setFillcolor] = useState();
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
   // const [saveposition, setSaveposition] = useState();
@@ -133,6 +135,7 @@ const DrawAnnotations = (props) => {
   }, [position, drawtype]);
 
   useEffect(() => {
+    setShow(false);
     stageRef.current.on("click", (e) => {
       setShow(false);
       localStorage.removeItem("selected");
@@ -141,6 +144,10 @@ const DrawAnnotations = (props) => {
       } else setFillcolor(null);
     });
   }, []);
+  useEffect(() => {
+    console.log("imin");
+    setShow(true);
+  }, [anchorPoint]);
   useEffect(() => {
     //분석후 화면을 캡쳐하여 pdf로 만듬
     if (triggerthumb) {
@@ -158,6 +165,7 @@ const DrawAnnotations = (props) => {
     //trigger when context mouseup
     if (contextinfo) {
       setShow(true);
+      console.log("im");
       currentShape = { attrs: { id: contextinfo } };
       dispatch(globalVariable({ contextinfo: null }));
     }
@@ -172,12 +180,22 @@ const DrawAnnotations = (props) => {
 
   useEffect(() => {
     //side menu click시 변경
-    if (sidetype === "nude") {
-      $("#srccontainer").show();
-      $("#resultcontainer").hide();
-    } else {
-      $("#srccontainer").hide();
-      $("#resultcontainer").show();
+    switch (sidetype) {
+      case "nude":
+        $("#noimg").hide();
+        $("#srccontainer").show();
+        $("#resultcontainer").hide();
+        break;
+      case "added":
+        $("#noimg").hide();
+        $("#srccontainer").hide();
+        $("#resultcontainer").show();
+        break;
+      default:
+        $("#srccontainer").hide();
+        $("#resultcontainer").hide();
+        $("#noimg").show();
+        break;
     }
   }, [sidetype]);
 
@@ -190,72 +208,6 @@ const DrawAnnotations = (props) => {
     $("#srccontainer").hide();
     $("#resultcontainer").show();
   }, [readtype]);
-  // // Fixed stage size
-  // var SCENE_BASE_WIDTH = 800;
-  // var SCENE_BASE_HEIGHT = 600;
-
-  // // Max upscale
-  // var SCENE_MAX_WIDTH = 1024;
-  // var SCENE_MAX_HEIGHT = 768;
-
-  // function resizeStage1() {
-  //   // Get kinetic stage container div
-  //   const stage = stageRef.current;
-  //   var container = stage.getWidth();
-
-  //   // Get container size
-  //   var containerSize = {
-  //     width: window.innerWidth - 270,
-  //     height: window.innnerHeight,
-  //   };
-  //   console.log(containerSize);
-  //   // Odd size can cause blurry picture due to subpixel rendering
-  //   if (containerSize.width % 2 !== 0) containerSize.width--;
-  //   if (containerSize.height % 2 !== 0) containerSize.height--;
-
-  //   // Resize stage
-  //   stage.size(containerSize);
-
-  //   // Scale stage
-  //   var scaleX =
-  //     Math.min(containerSize.width, SCENE_MAX_WIDTH) / SCENE_BASE_WIDTH;
-  //   var scaleY =
-  //     Math.min(containerSize.height, SCENE_MAX_HEIGHT) / SCENE_BASE_HEIGHT;
-
-  //   var minRatio = Math.min(scaleX, scaleY);
-  //   var scale = { x: minRatio, y: minRatio };
-
-  //   stage.scale(scale);
-
-  //   // Center stage
-  //   var stagePos = {
-  //     x: (containerSize.width - SCENE_BASE_WIDTH * minRatio) * 0.5,
-  //     y: (containerSize.height - SCENE_BASE_HEIGHT * minRatio) * 0.5,
-  //   };
-
-  //   stage.position(stagePos);
-
-  //   // Redraw stage
-  //   stage.batchDraw();
-  // }
-  // function fitStageIntoParentContainer() {
-  //   var sceneWidth = window.innerWidth - 270;
-  //   var sceneHeight = window.innerHeight - 223;
-  //   var container = document.querySelector("#resultcontainer");
-
-  //   // now we need to fit stage into parent container
-  //   var rect = container.getBoundingClientRect();
-  //   let containerWidth = rect.width;
-  //   //let height = rect.height;
-  //   //containerWidth = stageRef.current.getWidth();
-  //   // but we also make the full scene visible
-  //   // so we need to scale all objects on canvas
-  //   var scale = containerWidth / sceneWidth;
-  //   console.log(containerWidth, sceneWidth, scale);
-  //   stageRef.current.width(sceneWidth * scale);
-  //   stageRef.current.height(sceneHeight * scale);
-  //   stageRef.current.scale({ x: scale, y: scale });
-  // }
 
   const refreshImage = (type, runTrans) => {
     if (!lionsize) {
@@ -324,15 +276,11 @@ const DrawAnnotations = (props) => {
     return _.uniqBy(rtn, "id");
   };
   const makeRectImage = () => {
-    // Create the Konva.Image() and add it to the stage
-    //stage 현재위치, scale 기록
-
-    //x=0,y=0로 이동
+    //x=0,y=0로 이동 scale=1로 셋팅
     moveTransform();
-    //scale=1로 셋팅
     //dataURL캡쳐
-    //stage 현재위치로 이동
     var dataURL = stageRef.current.toDataURL();
+    //stage 원위치로 이동
     resetTransform();
     dispatch(globalVariable({ thumbimg: dataURL }));
     return dataURL;
@@ -359,16 +307,14 @@ const DrawAnnotations = (props) => {
 
     const mousePosition = e.target.getStage().getPointerPosition();
     currentShape = e.target;
+
     //dispatch(globalVariable({ currentShape: e.target }));
-    // setAnchorPoint({
-    //   x: stage.getPointerPosition().x + 220,
-    //   y: stage.getPointerPosition().y + 220,
-    // });
     setAnchorPoint({
-      x: mousePosition.x + 220,
-      y: mousePosition.y + 220,
+      x: e.target.getStage().getPointerPosition().x,
+      y: e.target.getStage().getPointerPosition().y,
     });
     setShow(true);
+    console.log(mousePosition, show);
   };
   const contextClick = (type) => {
     const id = currentShape.attrs?.id;
@@ -379,6 +325,7 @@ const DrawAnnotations = (props) => {
     const obj = _.find(posi, (o) => {
       return o.id === id;
     });
+    console.log(id);
     switch (type) {
       case "delete":
         posi.splice(index, 1);
@@ -394,9 +341,8 @@ const DrawAnnotations = (props) => {
       default:
         break;
     }
-
-    dispatch(globalVariable({ position: [...posi] }));
     setShow(false);
+    dispatch(globalVariable({ position: [...posi] }));
   };
   //#endregion
 
@@ -428,12 +374,10 @@ const DrawAnnotations = (props) => {
       let anno = [...position];
       anno.push(annotationToAdd);
       setNewAnnotation([]);
-      if ((x - sx < 5) | (y - sy < 5)) return;
-      setAnchorPoint({
-        x: x + 220,
-        y: y + 220,
-      });
-
+      // if ((x - sx < 5) | (y - sy < 5)) return;
+      // handleContextMenu(event);
+      console.log(event.target.getStage().getPointerPosition(), x, y);
+      setAnchorPoint(event.target.getStage().getPointerPosition());
       dispatch(globalVariable({ draggable: true }));
       dispatch(globalVariable({ position: anno }));
       dispatch(globalVariable({ contextinfo: "rect" + idnum }));
@@ -599,7 +543,7 @@ const DrawAnnotations = (props) => {
     transform.m[5] = 0;
     stageRef.current.setAttrs(transform.decompose());
   };
-
+  console.log("show", show);
   return (
     <div id="stage-parent">
       {/* <button
@@ -617,7 +561,9 @@ const DrawAnnotations = (props) => {
       <button onClick={imageTransform}>imageformtest</button>
       <button onClick={saveTransform}>saveTransform</button>
       <button onClick={resetTransform}>resetTransform</button> */}
-
+      <div id="noimg">
+        <img src={noimg} width={300} />
+      </div>
       <div id="srccontainer">
         <Stage
           onWheel={handleWheel}

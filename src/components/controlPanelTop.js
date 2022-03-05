@@ -63,6 +63,7 @@ const ImageForm = () => {
         dispatch(globalVariable({ originimg: dt }));
         dispatch(globalVariable({ thumbimg: null }));
         dispatch(globalVariable({ sidetype: "nude" }));
+        $(".menutop div").show();
       });
     };
   }
@@ -153,6 +154,7 @@ const ImageForm = () => {
             <input
               type="file"
               id="file"
+              accept=".png,.jpg,.jpeg,.gif"
               className="uploadButton"
               onChange={fileUpload}
             />
@@ -170,7 +172,7 @@ const ImageForm = () => {
           </div>
         </form>
 
-        <div style={{ textAlign: "right" }}>
+        <div style={{ textAlign: "right", display: "none" }}>
           <Popconfirm
             title="안정형 판독을 진행하시겠습니까?"
             onConfirm={() => confirm("stable")}

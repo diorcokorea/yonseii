@@ -164,14 +164,14 @@ const ImageForm = () => {
               정상
             </Checkbox>
           </div>
-          <div style={{ paddingTop: -5 }}>
-            {/* <Input
+          <div style={{ paddingTop: 0 }}>
+            <input
               id="normal"
+              className="countInput"
+              type="text"
               value={counting?.normal}
-              style={{ height: 25 }}
               disabled
-            /> */}
-             <input id="normal" className="countInput" type="text" value={counting?.normal} disabled></input>
+            ></input>
           </div>
           <Checkbox
             className="checkbox-green"
@@ -180,15 +180,21 @@ const ImageForm = () => {
           >
             이상
           </Checkbox>
-          <div style={{ paddingTop: -5 }}>
+          <div style={{ paddingTop: 0 }}>
             {/* <Input
               id="abnormal"
               value={counting?.abnormal}
               disabled
               style={{ height: 25 }}
             /> */}
-            
-            <input id="abnormal" className="countInput" type="text" value={counting?.abnormal} disabled></input>
+
+            <input
+              id="abnormal"
+              className="countInput"
+              type="text"
+              value={counting?.abnormal}
+              disabled
+            ></input>
           </div>
         </div>
         <div className={!thumbimg && "hideitem"}>

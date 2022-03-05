@@ -19,6 +19,7 @@ body {
   grid-template-columns: 270px 1fr;
   justify-items: stretch;
 }
+
 .sidebar {
   padding: 20px 15px;
   background-color: rgb(244, 245, 247);
@@ -232,4 +233,18 @@ li:hover {
 }
 #abnormal {
   color: red;
+}
+#stage-parent {
+  position: relative;
+}
+
+#noimg {
+  width: 100px;
+  height: 100px;
+
+  position: absolute;
+  top: 40%;
+  left: 40%;
+
+  transform: translate(-50%, -50%);
 }
