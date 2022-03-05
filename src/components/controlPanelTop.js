@@ -27,7 +27,6 @@ const ImageForm = () => {
   const originimg = useSelector((state) => state.global.originimg);
   const imgname = useSelector((state) => state.global.imgname);
 
-  //  const [imgname, setImgname] = useState("");
   const [spinshow, setSpinshow] = useState(false);
 
   useEffect(() => {
@@ -50,20 +49,28 @@ const ImageForm = () => {
       reader.onerror = (error) => reject(error);
     });
   }
+  const reset = () => {
+    dispatch(globalVariable({ imgname: "" }));
+    dispatch(globalVariable({ originimg: "" }));
+    dispatch(globalVariable({ sidetype: "" }));
+    dispatch(globalVariable({ position: [] }));
+  };
   function fileUpload(e) {
+    //$(".menutop div").css({ visibility: "hidden" });
     let URL = window.webkitURL || window.URL;
     if (e.target.files.length === 0) return;
+    console.log("upup");
     let url = URL.createObjectURL(e.target.files[0]);
     let img = new Image();
     img.src = url;
+    reset();
     img.onload = function () {
       getBase64(e.target.files[0]).then((data) => {
         const dt = _.cloneDeep(data);
         dispatch(globalVariable({ imgname: e.target.files[0].name }));
         dispatch(globalVariable({ originimg: dt }));
-        dispatch(globalVariable({ thumbimg: null }));
         dispatch(globalVariable({ sidetype: "nude" }));
-        $(".menutop div").show();
+        $(".menutop div").css({ visibility: "visible" });
       });
     };
   }
@@ -125,6 +132,7 @@ const ImageForm = () => {
             })
           );
           dispatch(globalVariable({ position: resultwithid }));
+          dispatch(globalVariable({ keepposition: resultwithid }));
           dispatch(globalVariable({ drawtype: [true, true, true] }));
           dispatch(globalVariable({ readtype: type }));
           dispatch(globalVariable({ sidetype: "added" }));
@@ -172,7 +180,13 @@ const ImageForm = () => {
           </div>
         </form>
 
-        <div style={{ textAlign: "right", display: "none" }}>
+        <div
+          style={{
+            textAlign: "right",
+            visibility: "hidden",
+            paddingTop: 10,
+          }}
+        >
           <Popconfirm
             title="안정형 판독을 진행하시겠습니까?"
             onConfirm={() => confirm("stable")}

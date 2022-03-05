@@ -7,6 +7,7 @@ const globalVar = {
   originimg: null,
   originurl: null,
   position: null,
+  keepposition: null,
   draggable: true,
   readtype: "",
   sidetype: "noimg", //nude, added

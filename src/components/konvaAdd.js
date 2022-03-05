@@ -62,10 +62,9 @@ const LionImage = ({ originimg, stage }) => {
 };
 let currentShape;
 let lionsize;
-let contentwidth = window.innerWidth - 270;
+
 const DrawAnnotations = (props) => {
   const dispatch = useDispatch();
-  //dispatch(globalVariable({ display: "list" }));
   const scale = useSelector((state) => state.global.scale);
   const scaleorigin = useSelector((state) => state.global.scaleorigin);
   const drawtype = useSelector((state) => state.global.drawtype);
@@ -87,11 +86,9 @@ const DrawAnnotations = (props) => {
   const [show, setShow] = useState();
   const [fillcolor, setFillcolor] = useState();
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  // const [saveposition, setSaveposition] = useState();
   const [translate, setTranslate] = useState();
   const [initScale, setInitScale] = useState();
   const [savedTransform, setSavedTransform] = useState();
-  const [ratioo, setRatioo] = useState();
   const [size1, setSize1] = useState({
     width: window.innerWidth - 270,
     height: window.innerHeight - 223,
@@ -101,7 +98,7 @@ const DrawAnnotations = (props) => {
     height: window.innerHeight - 223,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const checkSize = () => {
       console.log(sidetype);
       const info = {
@@ -116,11 +113,14 @@ const DrawAnnotations = (props) => {
     window.addEventListener("resize", checkSize);
     return () => window.removeEventListener("resize", checkSize);
   }, [sidetype]);
+
   var SCENE_BASE_WIDTH = 1280;
   const scale1 = size1.width / SCENE_BASE_WIDTH;
   const scale2 = size2.width / SCENE_BASE_WIDTH;
+  let positionClone;
   useEffect(() => {
     if (position) {
+      positionClone = _.cloneDeep(position);
       const filtered = drawByType(position);
       setAnnotationsToDraw(filtered);
       const rtn = countGene(position);
@@ -129,25 +129,29 @@ const DrawAnnotations = (props) => {
           counting: { normal: rtn.normal, abnormal: rtn.abnormal },
         })
       );
-
       saveTransform();
     }
   }, [position, drawtype]);
 
   useEffect(() => {
     setShow(false);
+    $("#noimg").show();
     stageRef.current.on("click", (e) => {
       setShow(false);
       localStorage.removeItem("selected");
+      console.log(position);
       if (e.target.attrs.name === "rect") {
         selectRect(e);
-      } else setFillcolor(null);
+      } else {
+        setFillcolor(null);
+        removeUndecided();
+      }
     });
   }, []);
   useEffect(() => {
-    console.log("imin");
-    setShow(true);
+    if (!(anchorPoint.x === 0 && anchorPoint.y === 0)) setShow(true);
   }, [anchorPoint]);
+
   useEffect(() => {
     //분석후 화면을 캡쳐하여 pdf로 만듬
     if (triggerthumb) {
@@ -172,10 +176,9 @@ const DrawAnnotations = (props) => {
   }, [contextinfo]);
   useEffect(() => {
     //새로운 이미지가 로드될때 작동
-    setTimeout(() => {
-      refreshImage("nude", true);
-      refreshImage("added", true);
-    }, 500);
+    console.log("chg origin");
+    refreshImage("nude", true);
+    refreshImage("added", true);
   }, [originimg]);
 
   useEffect(() => {
@@ -194,7 +197,7 @@ const DrawAnnotations = (props) => {
       default:
         $("#srccontainer").hide();
         $("#resultcontainer").hide();
-        $("#noimg").show();
+        //$("#noimg").show();
         break;
     }
   }, [sidetype]);
@@ -216,7 +219,7 @@ const DrawAnnotations = (props) => {
     }
     let stg = imageRef.current;
     if (type === "added") stg = stageRef.current;
-    if (!stg) return;
+
     let width = stg.getWidth();
     let height = stg.getHeight();
 
@@ -229,8 +232,6 @@ const DrawAnnotations = (props) => {
     let min = Math.min(width, height);
     let ratio = img_width > img_height ? img_width / min : img_height / min;
 
-    // if (!ratioo) setRatioo(ratio);
-    // else ratio = ratioo;
     const transform = stg.getAbsoluteTransform();
 
     let trans = translate;
@@ -314,9 +315,9 @@ const DrawAnnotations = (props) => {
       y: e.target.getStage().getPointerPosition().y,
     });
     setShow(true);
-    console.log(mousePosition, show);
   };
   const contextClick = (type) => {
+    console.log(position);
     const id = currentShape.attrs?.id;
     let posi = _.cloneDeep(position);
     var index = _.findIndex(posi, (o) => {
@@ -325,9 +326,10 @@ const DrawAnnotations = (props) => {
     const obj = _.find(posi, (o) => {
       return o.id === id;
     });
-    console.log(id);
+
     switch (type) {
       case "delete":
+      default:
         posi.splice(index, 1);
         break;
       case "stable":
@@ -337,8 +339,6 @@ const DrawAnnotations = (props) => {
       case "unstable":
         obj.class = obj.class === 3 ? (obj.class = 32) : (obj.class = 2);
         posi.splice(index, 1, addStroke(obj));
-        break;
-      default:
         break;
     }
     setShow(false);
@@ -374,9 +374,7 @@ const DrawAnnotations = (props) => {
       let anno = [...position];
       anno.push(annotationToAdd);
       setNewAnnotation([]);
-      // if ((x - sx < 5) | (y - sy < 5)) return;
-      // handleContextMenu(event);
-      console.log(event.target.getStage().getPointerPosition(), x, y);
+
       setAnchorPoint(event.target.getStage().getPointerPosition());
       dispatch(globalVariable({ draggable: true }));
       dispatch(globalVariable({ position: anno }));
@@ -410,6 +408,16 @@ const DrawAnnotations = (props) => {
           key: "0",
         },
       ]);
+    }
+  };
+  const removeUndecided = () => {
+    console.log(positionClone);
+    var removed = _.remove(position, (o) => {
+      return o.class === 3;
+    });
+    console.log(position);
+    if (removed.length > 0) {
+      dispatch(globalVariable({ position }));
     }
   };
   //#endregion
@@ -543,7 +551,6 @@ const DrawAnnotations = (props) => {
     transform.m[5] = 0;
     stageRef.current.setAttrs(transform.decompose());
   };
-  console.log("show", show);
   return (
     <div id="stage-parent">
       {/* <button
@@ -561,7 +568,8 @@ const DrawAnnotations = (props) => {
       <button onClick={imageTransform}>imageformtest</button>
       <button onClick={saveTransform}>saveTransform</button>
       <button onClick={resetTransform}>resetTransform</button> */}
-      <div id="noimg">
+      <button onClick={() => console.log(position, positionClone)}>posi</button>
+      <div id="noimg" style={{ display: "none" }}>
         <img src={noimg} width={300} />
       </div>
       <div id="srccontainer">

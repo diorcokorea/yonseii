@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     height: window.innerHeight,
   },
 });
-let originposition;
+
 const ImageForm = () => {
   const dispatch = useDispatch();
   const scale = useSelector((state) => state.global.scale);
@@ -27,6 +27,7 @@ const ImageForm = () => {
   const draggable = useSelector((state) => state.global.draggable);
   const drawtype = useSelector((state) => state.global.drawtype);
   const position = useSelector((state) => state.global.position);
+  const keepposition = useSelector((state) => state.global.keepposition);
   const counting = useSelector((state) => state.global.counting);
   const thumbimg = useSelector((state) => state.global.thumbimg);
 
@@ -37,9 +38,12 @@ const ImageForm = () => {
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
   const [isModal, setIsModal] = useState(false);
+  const [btndisabled, setBtndisabled] = useState(true);
   useEffect(() => {
-    originposition = _.cloneDeep(position);
-  }, []);
+    console.log(_.isEqual(position, keepposition));
+    if (_.isEqual(position, keepposition)) setBtndisabled(true);
+    else setBtndisabled(false);
+  }, [position]);
   useEffect(() => {
     setPlustype(!draggable);
   }, [draggable]);
@@ -65,10 +69,7 @@ const ImageForm = () => {
     }
   }
   const removeAll = () => {
-    // let origin = _.remove(position, function (n) {
-    //   return (n.class === 1) | (n.class === 2);
-    // });
-    dispatch(globalVariable({ position: originposition }));
+    dispatch(globalVariable({ position: keepposition }));
   };
   const deleteSelected = () => {
     // let annotationsToDraw = JSON.parse(localStorage.getItem("annotation"));
@@ -154,25 +155,22 @@ const ImageForm = () => {
           </Col>
         </Row>
 
-        <div className={thumbimg ? "resultnumber" : "hideitem"}>
-          <div>
-            <Checkbox
-              className="checkbox-green"
-              onChange={() => checkOnchange("stable")}
-              checked={isStable}
-            >
-              정상
-            </Checkbox>
-          </div>
-          <div style={{ paddingTop: 0 }}>
-            <input
-              id="normal"
-              className="countInput"
-              type="text"
-              value={counting?.normal}
-              disabled
-            ></input>
-          </div>
+        <div className={sidetype === "added" ? "resultnumber" : "hideitem"}>
+          <Checkbox
+            className="checkbox-green"
+            onChange={() => checkOnchange("stable")}
+            checked={isStable}
+          >
+            정상
+          </Checkbox>
+
+          <input
+            id="normal"
+            className="countInput"
+            type="text"
+            value={counting?.normal}
+            disabled
+          />
           <Checkbox
             className="checkbox-green"
             onChange={() => checkOnchange("unstable")}
@@ -180,24 +178,16 @@ const ImageForm = () => {
           >
             이상
           </Checkbox>
-          <div style={{ paddingTop: 0 }}>
-            {/* <Input
-              id="abnormal"
-              value={counting?.abnormal}
-              disabled
-              style={{ height: 25 }}
-            /> */}
 
-            <input
-              id="abnormal"
-              className="countInput"
-              type="text"
-              value={counting?.abnormal}
-              disabled
-            ></input>
-          </div>
+          <input
+            id="abnormal"
+            className="countInput"
+            type="text"
+            value={counting?.abnormal}
+            disabled
+          />
         </div>
-        <div className={!thumbimg && "hideitem"}>
+        <div className={sidetype === "nude" && "hideitem"}>
           <Space style={{ width: "100%" }}>
             <Button
               size="large"
@@ -214,19 +204,29 @@ const ImageForm = () => {
               icon={<AiOutlineDelete />}
               type={minustype}
               size="large"
-              style={{ backgroundColor: "#00a041", color: "white" }}
+              disabled={btndisabled}
+              style={
+                btndisabled
+                  ? {}
+                  : { backgroundColor: "#00a041", color: "white" }
+              }
               onClick={deleteSelected}
             />
             <Button
               icon={<FiRotateCw />}
-              title="새로 입력한 Box를 초기화합니다."
+              disabled={btndisabled}
+              title="선택박스를 최초값으로 초기화합니다."
               size="large"
-              style={{ backgroundColor: "#00a041", color: "white" }}
+              style={
+                btndisabled
+                  ? {}
+                  : { backgroundColor: "#00a041", color: "white" }
+              }
               onClick={removeAll}
             />
           </Space>
         </div>
-        <div className={!thumbimg && "hideitem"}>
+        <div className={sidetype === "nude" && "hideitem"}>
           <Button
             shape="round"
             size="large"
