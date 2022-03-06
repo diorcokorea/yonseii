@@ -176,9 +176,11 @@ const DrawAnnotations = (props) => {
   }, [contextinfo]);
   useEffect(() => {
     //새로운 이미지가 로드될때 작동
-    console.log("chg origin");
-    refreshImage("nude", true);
-    refreshImage("added", true);
+    // console.log("chg origin");
+    // setTimeout(() => {
+    //   refreshImage("nude", true);
+    //   refreshImage("added", true);
+    // }, 300);
   }, [originimg]);
 
   useEffect(() => {
@@ -233,7 +235,10 @@ const DrawAnnotations = (props) => {
     let ratio = img_width > img_height ? img_width / min : img_height / min;
 
     const transform = stg.getAbsoluteTransform();
-
+    if (!transform.m[1]) transform.m[1] = 0;
+    if (!transform.m[2]) transform.m[2] = 0;
+    if (!transform.m[3]) transform.m[3] = 0;
+    console.log(transform.m, stg);
     let trans = translate;
     if (!trans && runTrans) {
       //transform
@@ -247,7 +252,9 @@ const DrawAnnotations = (props) => {
     transform.m[4] = (width - img_width / ratio) / 2.0;
     transform.m[5] = (height - img_height / ratio) / 2.0 - 40;
     transform.m[0] = transform.m[3] = 1 / ratio;
+
     //transform.scale(1.0 / ratio, 1.0 / ratio);
+    console.log(transform.m);
     setInitScale(1.0 / ratio);
     stg.setAttrs(transform.decompose());
   };
@@ -278,11 +285,11 @@ const DrawAnnotations = (props) => {
   };
   const makeRectImage = () => {
     //x=0,y=0로 이동 scale=1로 셋팅
-    moveTransform();
+    //moveTransform();
     //dataURL캡쳐
     var dataURL = stageRef.current.toDataURL();
     //stage 원위치로 이동
-    resetTransform();
+    //resetTransform();
     dispatch(globalVariable({ thumbimg: dataURL }));
     return dataURL;
   };
@@ -423,13 +430,13 @@ const DrawAnnotations = (props) => {
   //#endregion
 
   //#region wheel action
-  var scaleBy = 0.25;
+  var scaleBy = 0.025;
   const resizeStage = (stage, scaleinfo, deltaY) => {
     if (!stage) return;
     var oldScale = stage.scaleX();
-    if ((oldScale === 0) | !oldScale) oldScale = 1;
+    // if ((oldScale === 0) | !oldScale) oldScale = 1;
     var pointer = stage.getPointerPosition();
-    if (!pointer) return;
+    console.log(oldScale, scaleinfo);
 
     //마우스 포인터에 따른 액션으로 하려면 cernter, relatedTo대신 사용
     // var mousePointTo = {
@@ -450,10 +457,14 @@ const DrawAnnotations = (props) => {
     var newScale;
     if (scaleinfo | (scaleinfo === 0))
       newScale = initScale + scaleBy * scaleinfo;
-    else newScale = deltaY > 0 ? oldScale - scaleBy : oldScale + scaleBy;
-    if (newScale < initScale) newScale = initScale;
-    if (newScale > initScale + scaleBy * 10)
-      newScale = initScale + scaleBy * 10;
+    else {
+      newScale = deltaY > 0 ? oldScale - scaleBy : oldScale + scaleBy;
+    }
+
+    const scalesize = parseInt((newScale - initScale) / scaleBy);
+    if (scalesize < 0) newScale = initScale;
+    if (scalesize > 100) newScale = oldScale;
+
     stage.scale({
       x: newScale,
       y: newScale,
@@ -482,16 +493,15 @@ const DrawAnnotations = (props) => {
 
     const newScale = resizeStage(stage, null, e.evt.deltaY);
 
-    if ((newScale <= initScale) | (newScale >= initScale + scaleBy * 10))
-      return;
+    // if ((newScale <= initScale) | (newScale >= initScale + scaleBy * 10))
+    //   return;
     let scalesize;
 
     if (Math.abs(newScale - initScale) < 0.00001) scalesize = 0;
     else scalesize = parseInt((newScale - initScale) / scaleBy);
-
-    if (scalesize >= 10) scalesize = 10;
+    console.log(newScale, initScale, scalesize);
+    if (scalesize >= 100) scalesize = 100;
     if (scalesize <= 0) scalesize = 0;
-    console.log(scalesize, newScale, initScale);
     if (sidetype === "added") {
       dispatch(globalVariable({ scale: scalesize }));
     } else {
@@ -545,10 +555,12 @@ const DrawAnnotations = (props) => {
   const moveTransform = () => {
     //x=y=0, scalex:1.1, scaley=0.9로 transform
     const transform = stageRef.current.getAbsoluteTransform();
-    transform.m[0] = 1.1;
-    transform.m[3] = 0.75;
-    transform.m[4] = 0;
-    transform.m[5] = 0;
+    const scalex = transform.m[0];
+    console.log(transform.m, stageRef.current.attrs);
+    transform.m[0] = 0.8;
+    transform.m[3] = 0.8;
+    transform.m[4] = 0; //(370 * scalex) / 0.695;
+    transform.m[5] = -20;
     stageRef.current.setAttrs(transform.decompose());
   };
   return (

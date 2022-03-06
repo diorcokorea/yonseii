@@ -60,7 +60,7 @@ const Sidebar = () => {
                 setSelected2(false);
               }}
             >
-              <img src={imgorigin} width={"100%"} description="" alt="" />
+              <img src={imgorigin} description="" alt="" />
             </div>
           </div>
           <div className="box">
@@ -85,13 +85,7 @@ const Sidebar = () => {
                 setSelected2(true);
               }}
             >
-              <img
-                crossOrigin="anonymous"
-                src={imgthumb}
-                width={220}
-                height={210}
-                alt=""
-              />
+              <img crossOrigin="anonymous" src={imgthumb} alt="" />
             </div>
           </div>
         </Space>

@@ -53,12 +53,12 @@ body {
 .resultnumber {
   margin: 5px 0 0 20px;
   display: grid;
-  grid-template-columns: 60px 1fr 60px 1fr;
+  grid-template-columns: 80px 1fr 80px 1fr;
   justify-items: stretch;
   grid-gap: 15px;
 }
 .hideitem {
-  visibility: hidden;
+  display: none;
 }
 .checkbox-green {
   min-width: 50px;
@@ -136,7 +136,14 @@ li:hover {
 }
 .box {
   margin: 20px 0 20px 0;
+  overflow: hidden;
 }
+.box img {
+  max-width: 230px;
+  height: 230px;
+  object-fit: cover;
+}
+
 .sidetitle {
   border-bottom: solid 1px #dfdfdf;
   margin-bottom: 10px;
@@ -146,8 +153,6 @@ li:hover {
   clear: both;
 }
 .sidemenu1 {
-  width: 220px;
-  height: 210px;
   background-color: white;
   clear: both;
 }

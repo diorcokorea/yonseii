@@ -11,6 +11,7 @@ import { FiRotateCw } from "react-icons/fi";
 import PdfRender from "./pdfRender";
 import { PDFDownloadLink, PDFViewer, StyleSheet } from "@react-pdf/renderer";
 import _ from "lodash";
+import "../css/checkbox.css";
 
 const styles = StyleSheet.create({
   viewer: {
@@ -40,10 +41,12 @@ const ImageForm = () => {
   const [isModal, setIsModal] = useState(false);
   const [btndisabled, setBtndisabled] = useState(true);
   useEffect(() => {
+    console.log(position, keepposition);
     console.log(_.isEqual(position, keepposition));
     if (_.isEqual(position, keepposition)) setBtndisabled(true);
     else setBtndisabled(false);
   }, [position]);
+
   useEffect(() => {
     setPlustype(!draggable);
   }, [draggable]);
@@ -99,23 +102,24 @@ const ImageForm = () => {
     );
   };
   const sliderChange = (value) => {
+    console.log(value);
     if (value <= 0) value = 0;
-    else if (value >= 10) value = 10;
+    else if (value >= 100) value = 100;
     if (sidetype === "nude") dispatch(globalVariable({ scaleorigin: value }));
     else dispatch(globalVariable({ scale: value }));
   };
   const marks = {
     0: "0",
-    1: "1",
-    2: "2",
-    3: "3",
-    4: "4",
-    5: "5",
-    6: "6",
-    7: "7",
-    8: "8",
-    9: "9",
-    10: "10",
+    10: "1",
+    20: "2",
+    30: "3",
+    40: "4",
+    50: "5",
+    60: "6",
+    70: "7",
+    80: "8",
+    90: "9",
+    100: "10",
   };
   const openNotification = () => {
     notification.open({
@@ -147,7 +151,7 @@ const ImageForm = () => {
           <Col flex="auto">
             <Slider
               min={0}
-              max={10}
+              max={100}
               onChange={(value) => sliderChange(value)}
               marks={marks}
               value={sidetype === "nude" ? scaleorigin : scale}
@@ -156,14 +160,22 @@ const ImageForm = () => {
         </Row>
 
         <div className={sidetype === "added" ? "resultnumber" : "hideitem"}>
-          <Checkbox
+          {/* <Checkbox
             className="checkbox-green"
             onChange={() => checkOnchange("stable")}
             checked={isStable}
           >
             정상
-          </Checkbox>
-
+          </Checkbox> */}
+          <label className="container">
+            <input
+              type="checkbox"
+              onChange={() => checkOnchange("stable")}
+              checked={isStable}
+            />
+            정상
+            <span className="checkmark"></span>
+          </label>
           <input
             id="normal"
             className="countInput"
@@ -171,14 +183,22 @@ const ImageForm = () => {
             value={counting?.normal}
             disabled
           />
-          <Checkbox
+          {/* <Checkbox
             className="checkbox-green"
             onChange={() => checkOnchange("unstable")}
             checked={isUnstable}
           >
             이상
-          </Checkbox>
-
+          </Checkbox> */}
+          <label className="container">
+            <input
+              type="checkbox"
+              onChange={() => checkOnchange("unstable")}
+              checked={isUnstable}
+            />
+            이상
+            <span className="checkmark"></span>
+          </label>
           <input
             id="abnormal"
             className="countInput"

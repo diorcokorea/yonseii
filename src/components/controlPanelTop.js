@@ -53,7 +53,7 @@ const ImageForm = () => {
     dispatch(globalVariable({ imgname: "" }));
     dispatch(globalVariable({ originimg: "" }));
     dispatch(globalVariable({ sidetype: "" }));
-    dispatch(globalVariable({ position: [] }));
+    // dispatch(globalVariable({ position: null }));
   };
   function fileUpload(e) {
     //$(".menutop div").css({ visibility: "hidden" });
@@ -131,8 +131,9 @@ const ImageForm = () => {
               counting: { normal: rtn.normal, abnormal: rtn.abnormal },
             })
           );
-          dispatch(globalVariable({ position: resultwithid }));
+
           dispatch(globalVariable({ keepposition: resultwithid }));
+          dispatch(globalVariable({ position: resultwithid }));
           dispatch(globalVariable({ drawtype: [true, true, true] }));
           dispatch(globalVariable({ readtype: type }));
           dispatch(globalVariable({ sidetype: "added" }));
