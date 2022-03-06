@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import { Space, Input } from "antd";
-import { Button, Slider, Checkbox, Col, Row, notification, Modal } from "antd";
+import {
+  Space,
+  Button,
+  Slider,
+  Col,
+  Row,
+  notification,
+  Modal,
+  Popconfirm,
+} from "antd";
 import "antd/dist/antd.css";
 import "antd-button-color/dist/css/style.css";
 import { AiOutlineDelete } from "react-icons/ai";
@@ -41,8 +49,6 @@ const ImageForm = () => {
   const [isModal, setIsModal] = useState(false);
   const [btndisabled, setBtndisabled] = useState(true);
   useEffect(() => {
-    console.log(position, keepposition);
-    console.log(_.isEqual(position, keepposition));
     if (_.isEqual(position, keepposition)) setBtndisabled(true);
     else setBtndisabled(false);
   }, [position]);
@@ -73,10 +79,9 @@ const ImageForm = () => {
   }
   const removeAll = () => {
     dispatch(globalVariable({ position: keepposition }));
+    dispatch(globalVariable({ fillcolor: null }));
   };
   const deleteSelected = () => {
-    // let annotationsToDraw = JSON.parse(localStorage.getItem("annotation"));
-    // console.log(annotationsToDraw);
     const xy = JSON.parse(localStorage.getItem("selected"));
     var index = _.findIndex(position, (o) => {
       return o.id === xy.id;
@@ -102,7 +107,6 @@ const ImageForm = () => {
     );
   };
   const sliderChange = (value) => {
-    console.log(value);
     if (value <= 0) value = 0;
     else if (value >= 100) value = 100;
     if (sidetype === "nude") dispatch(globalVariable({ scaleorigin: value }));
@@ -160,13 +164,6 @@ const ImageForm = () => {
         </Row>
 
         <div className={sidetype === "added" ? "resultnumber" : "hideitem"}>
-          {/* <Checkbox
-            className="checkbox-green"
-            onChange={() => checkOnchange("stable")}
-            checked={isStable}
-          >
-            정상
-          </Checkbox> */}
           <label className="container">
             <input
               type="checkbox"
@@ -183,13 +180,6 @@ const ImageForm = () => {
             value={counting?.normal}
             disabled
           />
-          {/* <Checkbox
-            className="checkbox-green"
-            onChange={() => checkOnchange("unstable")}
-            checked={isUnstable}
-          >
-            이상
-          </Checkbox> */}
           <label className="container">
             <input
               type="checkbox"
@@ -232,18 +222,24 @@ const ImageForm = () => {
               }
               onClick={deleteSelected}
             />
-            <Button
-              icon={<FiRotateCw />}
-              disabled={btndisabled}
-              title="선택박스를 최초값으로 초기화합니다."
-              size="large"
-              style={
-                btndisabled
-                  ? {}
-                  : { backgroundColor: "#00a041", color: "white" }
-              }
-              onClick={removeAll}
-            />
+            <Popconfirm
+              title="박스값이 초기화됩니다. 계속하시겠습니까?"
+              onConfirm={removeAll}
+              okText="확인"
+              cancelText="취소"
+            >
+              <Button
+                icon={<FiRotateCw />}
+                disabled={btndisabled}
+                title="선택박스를 최초값으로 초기화합니다."
+                size="large"
+                style={
+                  btndisabled
+                    ? {}
+                    : { backgroundColor: "#00a041", color: "white" }
+                }
+              />
+            </Popconfirm>
           </Space>
         </div>
         <div className={sidetype === "nude" && "hideitem"}>

@@ -59,7 +59,6 @@ const ImageForm = () => {
     //$(".menutop div").css({ visibility: "hidden" });
     let URL = window.webkitURL || window.URL;
     if (e.target.files.length === 0) return;
-    console.log("upup");
     let url = URL.createObjectURL(e.target.files[0]);
     let img = new Image();
     img.src = url;

@@ -11,6 +11,7 @@ const globalVar = {
   draggable: true,
   readtype: "",
   sidetype: "noimg", //nude, added
+  fillcolor: null,
   drawtype: [true, true, true],
   currentShape: null,
   counting: null,

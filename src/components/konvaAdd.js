@@ -70,6 +70,7 @@ const DrawAnnotations = (props) => {
   const drawtype = useSelector((state) => state.global.drawtype);
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
+  const fillcolor = useSelector((state) => state.global.fillcolor);
   const position = useSelector((state) => state.global.position);
   const originimg = useSelector((state) => state.global.originimg);
   const draggable = useSelector((state) => state.global.draggable);
@@ -84,8 +85,8 @@ const DrawAnnotations = (props) => {
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
   const [show, setShow] = useState();
-  const [fillcolor, setFillcolor] = useState();
-  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+  const [contexttype, setContexttype] = useState();
+  const [anchorPoint, setAnchorPoint] = useState();
   const [translate, setTranslate] = useState();
   const [initScale, setInitScale] = useState();
   const [savedTransform, setSavedTransform] = useState();
@@ -100,7 +101,6 @@ const DrawAnnotations = (props) => {
 
   useEffect(() => {
     const checkSize = () => {
-      console.log(sidetype);
       const info = {
         width: window.innerWidth - 270,
         height: window.innerHeight - 223,
@@ -117,10 +117,9 @@ const DrawAnnotations = (props) => {
   var SCENE_BASE_WIDTH = 1280;
   const scale1 = size1.width / SCENE_BASE_WIDTH;
   const scale2 = size2.width / SCENE_BASE_WIDTH;
-  let positionClone;
+
   useEffect(() => {
     if (position) {
-      positionClone = _.cloneDeep(position);
       const filtered = drawByType(position);
       setAnnotationsToDraw(filtered);
       const rtn = countGene(position);
@@ -135,21 +134,20 @@ const DrawAnnotations = (props) => {
 
   useEffect(() => {
     setShow(false);
+    setAnchorPoint(null);
     $("#noimg").show();
     stageRef.current.on("click", (e) => {
       setShow(false);
       localStorage.removeItem("selected");
-      console.log(position);
       if (e.target.attrs.name === "rect") {
         selectRect(e);
       } else {
-        setFillcolor(null);
-        removeUndecided();
+        dispatch(globalVariable({ fillcolor: null }));
       }
     });
   }, []);
   useEffect(() => {
-    if (!(anchorPoint.x === 0 && anchorPoint.y === 0)) setShow(true);
+    if (anchorPoint) setShow(true);
   }, [anchorPoint]);
 
   useEffect(() => {
@@ -169,7 +167,6 @@ const DrawAnnotations = (props) => {
     //trigger when context mouseup
     if (contextinfo) {
       setShow(true);
-      console.log("im");
       currentShape = { attrs: { id: contextinfo } };
       dispatch(globalVariable({ contextinfo: null }));
     }
@@ -177,10 +174,10 @@ const DrawAnnotations = (props) => {
   useEffect(() => {
     //새로운 이미지가 로드될때 작동
     // console.log("chg origin");
-    // setTimeout(() => {
-    //   refreshImage("nude", true);
-    //   refreshImage("added", true);
-    // }, 300);
+    setTimeout(() => {
+      refreshImage("nude", true);
+      refreshImage("added", true);
+    }, 300);
   }, [originimg]);
 
   useEffect(() => {
@@ -238,7 +235,7 @@ const DrawAnnotations = (props) => {
     if (!transform.m[1]) transform.m[1] = 0;
     if (!transform.m[2]) transform.m[2] = 0;
     if (!transform.m[3]) transform.m[3] = 0;
-    console.log(transform.m, stg);
+
     let trans = translate;
     if (!trans && runTrans) {
       //transform
@@ -254,7 +251,6 @@ const DrawAnnotations = (props) => {
     transform.m[0] = transform.m[3] = 1 / ratio;
 
     //transform.scale(1.0 / ratio, 1.0 / ratio);
-    console.log(transform.m);
     setInitScale(1.0 / ratio);
     stg.setAttrs(transform.decompose());
   };
@@ -307,7 +303,7 @@ const DrawAnnotations = (props) => {
       })
     );
     localStorage.setItem("annotation", JSON.stringify(annotationsToDraw));
-    setFillcolor(e.target.attrs.id);
+    dispatch(globalVariable({ fillcolor: e.target.attrs.id }));
   };
   //#region contextmenu
   const handleContextMenu = (e) => {
@@ -315,7 +311,8 @@ const DrawAnnotations = (props) => {
 
     const mousePosition = e.target.getStage().getPointerPosition();
     currentShape = e.target;
-
+    console.log("click", e.target.attrs);
+    setContexttype(e.target.attrs.stroke);
     //dispatch(globalVariable({ currentShape: e.target }));
     setAnchorPoint({
       x: e.target.getStage().getPointerPosition().x,
@@ -324,7 +321,6 @@ const DrawAnnotations = (props) => {
     setShow(true);
   };
   const contextClick = (type) => {
-    console.log(position);
     const id = currentShape.attrs?.id;
     let posi = _.cloneDeep(position);
     var index = _.findIndex(posi, (o) => {
@@ -336,7 +332,6 @@ const DrawAnnotations = (props) => {
 
     switch (type) {
       case "delete":
-      default:
         posi.splice(index, 1);
         break;
       case "stable":
@@ -347,8 +342,11 @@ const DrawAnnotations = (props) => {
         obj.class = obj.class === 3 ? (obj.class = 32) : (obj.class = 2);
         posi.splice(index, 1, addStroke(obj));
         break;
+      default:
+        break;
     }
     setShow(false);
+
     dispatch(globalVariable({ position: [...posi] }));
   };
   //#endregion
@@ -380,8 +378,10 @@ const DrawAnnotations = (props) => {
       };
       let anno = [...position];
       anno.push(annotationToAdd);
-      setNewAnnotation([]);
+      localStorage.setItem("positionimsi", JSON.stringify(anno));
 
+      setNewAnnotation([]);
+      setContexttype(null);
       setAnchorPoint(event.target.getStage().getPointerPosition());
       dispatch(globalVariable({ draggable: true }));
       dispatch(globalVariable({ position: anno }));
@@ -417,14 +417,14 @@ const DrawAnnotations = (props) => {
       ]);
     }
   };
-  const removeUndecided = () => {
-    console.log(positionClone);
+  const removeUndecided = (position) => {
+    if (!position) return;
     var removed = _.remove(position, (o) => {
-      return o.class === 3;
+      return (o.class === 3) | (o.stroke === "green");
     });
-    console.log(position);
+
     if (removed.length > 0) {
-      dispatch(globalVariable({ position }));
+      dispatch(globalVariable({ position: position }));
     }
   };
   //#endregion
@@ -436,7 +436,6 @@ const DrawAnnotations = (props) => {
     var oldScale = stage.scaleX();
     // if ((oldScale === 0) | !oldScale) oldScale = 1;
     var pointer = stage.getPointerPosition();
-    console.log(oldScale, scaleinfo);
 
     //마우스 포인터에 따른 액션으로 하려면 cernter, relatedTo대신 사용
     // var mousePointTo = {
@@ -499,7 +498,6 @@ const DrawAnnotations = (props) => {
 
     if (Math.abs(newScale - initScale) < 0.00001) scalesize = 0;
     else scalesize = parseInt((newScale - initScale) / scaleBy);
-    console.log(newScale, initScale, scalesize);
     if (scalesize >= 100) scalesize = 100;
     if (scalesize <= 0) scalesize = 0;
     if (sidetype === "added") {
@@ -521,6 +519,7 @@ const DrawAnnotations = (props) => {
     //   [sidetype]: { ...pointer, scale: stage.scaleX() },
     // });
   };
+
   const centerTransform = () => {
     const transform = stageRef.current.getAbsoluteTransform();
     const matrix = transform.getMatrix();
@@ -556,7 +555,6 @@ const DrawAnnotations = (props) => {
     //x=y=0, scalex:1.1, scaley=0.9로 transform
     const transform = stageRef.current.getAbsoluteTransform();
     const scalex = transform.m[0];
-    console.log(transform.m, stageRef.current.attrs);
     transform.m[0] = 0.8;
     transform.m[3] = 0.8;
     transform.m[4] = 0; //(370 * scalex) / 0.695;
@@ -580,7 +578,7 @@ const DrawAnnotations = (props) => {
       <button onClick={imageTransform}>imageformtest</button>
       <button onClick={saveTransform}>saveTransform</button>
       <button onClick={resetTransform}>resetTransform</button> */}
-      <button onClick={() => console.log(position, positionClone)}>posi</button>
+      <button onClick={() => console.log(position)}>posi</button>
       <div id="noimg" style={{ display: "none" }}>
         <img src={noimg} width={300} />
       </div>
@@ -643,7 +641,11 @@ const DrawAnnotations = (props) => {
       </div>
 
       {show && (
-        <ContextMenu position={anchorPoint} contextClick={contextClick} />
+        <ContextMenu
+          position={anchorPoint}
+          contextClick={contextClick}
+          type={contexttype}
+        />
       )}
     </div>
   );
