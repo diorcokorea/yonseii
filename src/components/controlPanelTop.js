@@ -110,7 +110,8 @@ const ImageForm = () => {
   function reading(type) {
     setSpinshow(false);
     $.ajax({
-      url: `http://localhost:99/reading`,
+      //url: `http://localhost:99/reading`,
+      url: `${process.env.REACT_APP_SERVER}/reading`,
       type: "POST",
       dataType: "json",
       contentType: "application/json; charset=utf-8",
@@ -141,7 +142,8 @@ const ImageForm = () => {
       },
       error: function (e) {
         let message = "error : " + e;
-        console.log("error", message);
+
+        console.log("error", e);
       },
     });
   }

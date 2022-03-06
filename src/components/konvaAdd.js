@@ -577,8 +577,8 @@ const DrawAnnotations = (props) => {
       <button onClick={centerTransform}>transformtest</button>
       <button onClick={imageTransform}>imageformtest</button>
       <button onClick={saveTransform}>saveTransform</button>
-      <button onClick={resetTransform}>resetTransform</button> */}
-      <button onClick={() => console.log(position)}>posi</button>
+      <button onClick={resetTransform}>resetTransform</button> 
+      <button onClick={() => console.log(position)}>posi</button>*/}
       <div id="noimg" style={{ display: "none" }}>
         <img src={noimg} width={300} />
       </div>
