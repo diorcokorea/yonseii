@@ -157,7 +157,7 @@ const ImageForm = () => {
               <img
                 src={addbtn}
                 alt="fileupload"
-                style={{ cursor: "pointer", width: "80" }}
+                style={{ cursor: "pointer", width: 40 }}
               />
             </label>
 
@@ -178,7 +178,12 @@ const ImageForm = () => {
               type="text"
               value={imgname}
             /> */}
-            <input className="fileInput" type="text" value={imgname}></input>
+            <input
+              className="fileInput"
+              type="text"
+              value={imgname}
+              placeholder="파일을 추가해주세요"
+            ></input>
           </div>
         </form>
 
@@ -186,7 +191,7 @@ const ImageForm = () => {
           style={{
             textAlign: "right",
             visibility: "hidden",
-            paddingTop: 10,
+            marginRight: 20,
           }}
         >
           <Popconfirm
@@ -199,7 +204,7 @@ const ImageForm = () => {
               안정형 판독
             </Button>
           </Popconfirm>
-          &nbsp;
+          &nbsp;&nbsp;
           <Popconfirm
             title="불안정형 판독을 진행하시겠습니까?"
             onConfirm={() => confirm("unstable")}
