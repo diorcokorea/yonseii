@@ -8,7 +8,7 @@ import useImage from "use-image";
 import _ from "lodash";
 import $ from "jquery";
 
-import noimg from "../images/Side.png";
+import noimg from "../images/View-no image.png";
 //import Pdf from "./pdfView"
 
 function pdfReport(data) {
@@ -92,18 +92,18 @@ const DrawAnnotations = (props) => {
   const [savedTransform, setSavedTransform] = useState();
   const [size1, setSize1] = useState({
     width: window.innerWidth - 270,
-    height: window.innerHeight - 223,
+    height: window.innerHeight - 110,
   });
   const [size2, setSize2] = useState({
     width: window.innerWidth - 270,
-    height: window.innerHeight - 223,
+    height: window.innerHeight - 110,
   });
 
   useEffect(() => {
     const checkSize = () => {
       const info = {
         width: window.innerWidth - 270,
-        height: window.innerHeight - 223,
+        height: window.innerHeight - 110,
       };
       if (sidetype === "nude") setSize2(info);
       else setSize1(info);
@@ -223,7 +223,7 @@ const DrawAnnotations = (props) => {
     let height = stg.getHeight();
 
     width = window.innerWidth - 270;
-    height = window.innerHeight - 203;
+    height = window.innerHeight - 110;
 
     let img_width = lionsize.width;
     let img_height = lionsize.height;
