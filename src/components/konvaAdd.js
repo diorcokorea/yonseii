@@ -39,12 +39,12 @@ const addStroke = (data) => {
     switch (data.class) {
       case 1:
       case 31:
-        return "blue";
+        return "#00A041";
       case 2:
       case 32:
         return "red";
       case 3:
-        return "#00A041";
+        return "blue";
       default:
         return null;
     }
@@ -85,6 +85,7 @@ const DrawAnnotations = (props) => {
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
   const [show, setShow] = useState();
+  const [imgready, setImgready] = useState(false);
   const [contexttype, setContexttype] = useState();
   const [anchorPoint, setAnchorPoint] = useState();
   const [translate, setTranslate] = useState();
@@ -176,6 +177,7 @@ const DrawAnnotations = (props) => {
     // console.log("chg origin");
     setTimeout(() => {
       refreshImage("nude", true);
+
       refreshImage("added", true);
     }, 300);
   }, [originimg]);
@@ -185,7 +187,7 @@ const DrawAnnotations = (props) => {
     switch (sidetype) {
       case "nude":
         $("#noimg").hide();
-        $("#srccontainer").show();
+        if (imgready) $("#srccontainer").show();
         $("#resultcontainer").hide();
         break;
       case "added":
@@ -199,7 +201,7 @@ const DrawAnnotations = (props) => {
         //$("#noimg").show();
         break;
     }
-  }, [sidetype]);
+  }, [sidetype, imgready]);
 
   useEffect(() => {
     if (sidetype === "added") {
@@ -253,6 +255,10 @@ const DrawAnnotations = (props) => {
     //transform.scale(1.0 / ratio, 1.0 / ratio);
     setInitScale(1.0 / ratio);
     stg.setAttrs(transform.decompose());
+
+    setTimeout(() => {
+      setImgready(true);
+    }, 1500);
   };
 
   //filter by stable or unstable
@@ -420,7 +426,7 @@ const DrawAnnotations = (props) => {
   const removeUndecided = (position) => {
     if (!position) return;
     var removed = _.remove(position, (o) => {
-      return (o.class === 3) | (o.stroke === "green");
+      return (o.class === 3) | (o.stroke === "blue");
     });
 
     if (removed.length > 0) {
@@ -626,7 +632,7 @@ const DrawAnnotations = (props) => {
                       width={value.width}
                       height={value.height}
                       //fill={fillcolor === value.id ? "yellow" : "transparent"}
-                      stroke={value.stroke ? value.stroke : "green"}
+                      stroke={value.stroke ? value.stroke : "blue"}
                       strokeWidth={fillcolor === value.id ? 5 : 1}
                       name="rect"
                       onContextMenu={handleContextMenu}

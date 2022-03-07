@@ -109,7 +109,9 @@ li {
 li:hover {
   background-color: gray;
 }
-
+#srccontainer{
+  display:none;
+}
 .contextmenu {
   font-size: 14px;
   background-color: #fff;
@@ -257,4 +259,8 @@ li:hover {
   left: 50%;
 }
 
-/* checkbox */
+._loading_overlay_content {
+  top: 45%;
+  left: 35%;
+  position: fixed;
+}

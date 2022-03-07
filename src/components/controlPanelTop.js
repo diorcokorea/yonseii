@@ -8,6 +8,7 @@ import "antd-button-color/dist/css/style.css";
 import $ from "jquery";
 import _ from "lodash";
 import addbtn from "../images/Add_btn.png";
+import Loading from "./loading";
 
 export const countGene = (data) => {
   //let result_json = JSON.parse(input);
@@ -219,9 +220,10 @@ const ImageForm = () => {
       </div>
 
       {spinshow && (
-        <div className="spinwheel">
-          <Spin size="large" tip="Loading..." />
-        </div>
+        <Loading />
+        // <div className="spinwheel">
+        //   {/* <Spin size="large" tip="Loading..." /> */}
+        // </div>
       )}
     </>
   );

@@ -35,6 +35,7 @@ const ImageForm = () => {
   const sidetype = useSelector((state) => state.global.sidetype);
   const draggable = useSelector((state) => state.global.draggable);
   const drawtype = useSelector((state) => state.global.drawtype);
+  const fillcolor = useSelector((state) => state.global.fillcolor);
   const position = useSelector((state) => state.global.position);
   const keepposition = useSelector((state) => state.global.keepposition);
   const counting = useSelector((state) => state.global.counting);
@@ -48,9 +49,15 @@ const ImageForm = () => {
   const [minustype, setMinustype] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const [btndisabled, setBtndisabled] = useState(true);
+  const [btndisabled1, setBtndisabled1] = useState(true);
   useEffect(() => {
-    if (_.isEqual(position, keepposition)) setBtndisabled(true);
-    else setBtndisabled(false);
+    if (_.isEqual(position, keepposition)) {
+      setBtndisabled(true);
+      setBtndisabled1(true);
+    } else {
+      setBtndisabled(false);
+      setBtndisabled1(false);
+    }
   }, [position]);
 
   useEffect(() => {
@@ -60,6 +67,11 @@ const ImageForm = () => {
     setIsStable(true);
     setIsUnstable(true);
   }, [thumbimg]);
+  useEffect(() => {
+    console.log(fillcolor);
+    if (fillcolor) setBtndisabled(false);
+    else setBtndisabled(true);
+  }, [fillcolor]);
 
   function checkOnchange(type) {
     switch (type) {
@@ -227,14 +239,15 @@ const ImageForm = () => {
               onConfirm={removeAll}
               okText="확인"
               cancelText="취소"
+              disabled={btndisabled1}
             >
               <Button
                 icon={<FiRotateCw />}
-                disabled={btndisabled}
+                disabled={btndisabled1}
                 title="선택박스를 최초값으로 초기화합니다."
                 size="large"
                 style={
-                  btndisabled
+                  btndisabled1
                     ? {}
                     : { backgroundColor: "#00a041", color: "white" }
                 }
