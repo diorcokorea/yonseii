@@ -6,17 +6,19 @@ const ContextMenu = ({ position, contextClick, type }) => {
     { act: "unstable", title: "이상" },
     { act: "delete", title: "삭제" },
   ];
-  console.log(type);
+
   switch (type) {
     case "red":
       menus.splice(0, 1, { act: "stable", title: "정상으로 교체" });
       menus.splice(1, 1);
       break;
-    case "blue":
+    case "#00A041":
       menus.splice(1, 1, { act: "unstable", title: "이상으로 교체" });
       menus.splice(0, 1);
       break;
     default:
+      menus.splice(2, 1, { act: "delete", title: "취소" });
+
       break;
   }
   return (

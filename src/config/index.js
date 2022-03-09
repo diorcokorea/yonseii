@@ -16,7 +16,7 @@ const globalVar = {
   currentShape: null,
   counting: null,
   triggerthumb: false,
-  pdfrun: null,
+  triggerpdf: false,
   contextinfo: null,
 };
 

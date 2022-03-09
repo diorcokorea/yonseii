@@ -24,13 +24,11 @@
     "react-dom": "^17.0.2",
     "react-icons": "^4.3.1",
     "react-konva": "^17.0.2-5",
-    "react-loading-overlay": "^1.0.1",
     "react-pdf": "^5.7.1",
     "react-redux": "^7.2.6",
     "react-scripts": "^5.0.0",
     "react-to-pdf": "^0.0.14",
     "stream-browserify": "^3.0.0",
-    "styled-components": "^5.3.3",
     "use-image": "^1.0.8",
     "util": "^0.12.4",
     "web-vitals": "^2.1.4"
@@ -38,7 +36,7 @@
   "scripts": {
     "start": "set PORT=3003 && craco start",
     "build": "craco build",
-    "winBuild": "set \"GENERATE_SOURCEMAP=false\" && set NODE_OPTIONS= --max_old_space_size=32768 && react-scripts build",
+    "winBuild": "set \"GENERATE_SOURCEMAP=false\" && set NODE_OPTIONS= --max_old_space_size=32768 && craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },

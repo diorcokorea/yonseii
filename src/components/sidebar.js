@@ -18,10 +18,16 @@ const Sidebar = () => {
   const [selected1, setSelected1] = useState(false);
   const [selected2, setSelected2] = useState(false);
   const [showSide, setShowside] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
-    if (!thumb) setImgthumb(noimage);
-    else setImgthumb(thumb);
+    if (!thumb) {
+      setImgthumb(noimage);
+      setShowResult(false);
+    } else {
+      setImgthumb(thumb);
+      setShowResult(true);
+    }
     if (!originimg) setImgorigin(noimage);
     else setImgorigin(originimg);
     if (originimg) setShowside(true);
@@ -63,31 +69,33 @@ const Sidebar = () => {
               <img src={imgorigin} description="" alt="" />
             </div>
           </div>
-          <div className="box">
-            <div className="sidetitle">
-              <Space direction="horizontal" size="small">
-                <Title level={4}>정상/이상 판독</Title>
-                <Title level={5} type="success">
-                  {readtype === "stable"
-                    ? "(안정형)"
-                    : readtype === "unstable"
-                    ? "(불안정형)"
-                    : ""}
-                </Title>
-              </Space>
+          {showResult && (
+            <div className="box">
+              <div className="sidetitle">
+                <Space direction="horizontal" size="small">
+                  <Title level={4}>정상/이상 판독</Title>
+                  <Title level={5} type="success">
+                    {readtype === "stable"
+                      ? "(안정형)"
+                      : readtype === "unstable"
+                      ? "(불안정형)"
+                      : ""}
+                  </Title>
+                </Space>
+              </div>
+              <div
+                className={selected2 ? "sideclicked" : "sidemenu1"}
+                onClick={() => {
+                  dispatch(globalVariable({ drawtype: [true, true, true] }));
+                  dispatch(globalVariable({ sidetype: "added" }));
+                  setSelected1(false);
+                  setSelected2(true);
+                }}
+              >
+                <img crossOrigin="anonymous" src={imgthumb} alt="" />
+              </div>
             </div>
-            <div
-              className={selected2 ? "sideclicked" : "sidemenu1"}
-              onClick={() => {
-                dispatch(globalVariable({ drawtype: [true, true, true] }));
-                dispatch(globalVariable({ sidetype: "added" }));
-                setSelected1(false);
-                setSelected2(true);
-              }}
-            >
-              <img crossOrigin="anonymous" src={imgthumb} alt="" />
-            </div>
-          </div>
+          )}
         </Space>
       )}
     </div>

@@ -9,31 +9,7 @@ import _ from "lodash";
 import $ from "jquery";
 
 import noimg from "../images/View-no image.png";
-//import Pdf from "./pdfView"
 
-function pdfReport(data) {
-  console.log(JSON.stringify(data));
-  $.ajax({
-    //url: "http://localhost:99/pdfgen",
-    url: `${process.env.REACT_APP_SERVER}/pdfgen`,
-    type: "POST",
-    contentType: "application/json; charset=utf-8",
-    data: JSON.stringify(data),
-    timeout: 10000000,
-    success: function (obj) {
-      if (obj.success === true) {
-        window.open(obj.url, "_blank");
-      } else {
-        let message = "error : " + obj.reason;
-        alert(message);
-      }
-    },
-    error: function (e) {
-      let message = "error : " + e.message;
-      console.log(message);
-    },
-  });
-}
 const addStroke = (data) => {
   const color = () => {
     switch (data.class) {
@@ -75,7 +51,7 @@ const DrawAnnotations = (props) => {
   const originimg = useSelector((state) => state.global.originimg);
   const draggable = useSelector((state) => state.global.draggable);
   const triggerthumb = useSelector((state) => state.global.triggerthumb);
-  const pdfrun = useSelector((state) => state.global.pdfrun);
+  const triggerpdf = useSelector((state) => state.global.triggerpdf);
   const contextinfo = useSelector((state) => state.global.contextinfo);
   const stageRef = React.useRef(null);
   const imageRef = React.useRef(null);
@@ -85,6 +61,7 @@ const DrawAnnotations = (props) => {
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
   const [show, setShow] = useState();
+  const [showing, setShowing] = useState();
   const [imgready, setImgready] = useState(false);
   const [contexttype, setContexttype] = useState();
   const [anchorPoint, setAnchorPoint] = useState();
@@ -123,6 +100,8 @@ const DrawAnnotations = (props) => {
     if (position) {
       const filtered = drawByType(position);
       setAnnotationsToDraw(filtered);
+
+      localStorage.setItem("positionimsi", JSON.stringify(position));
       const rtn = countGene(position);
       dispatch(
         globalVariable({
@@ -134,35 +113,42 @@ const DrawAnnotations = (props) => {
   }, [position, drawtype]);
 
   useEffect(() => {
-    setShow(false);
-    setAnchorPoint(null);
     $("#noimg").show();
+    setAnchorPoint(null);
+    setShow(false);
     stageRef.current.on("click", (e) => {
-      setShow(false);
       localStorage.removeItem("selected");
       if (e.target.attrs.name === "rect") {
         selectRect(e);
       } else {
         dispatch(globalVariable({ fillcolor: null }));
+        const imsi = localStorage.getItem("positionimsi");
+        if (imsi && currentShape && !currentShape?._id) {
+          removeUndecided(JSON.parse(imsi));
+        }
+        setShow(false);
       }
     });
   }, []);
   useEffect(() => {
-    if (anchorPoint) setShow(true);
+    if (anchorPoint) {
+      setShow(true);
+    }
   }, [anchorPoint]);
 
   useEffect(() => {
-    //분석후 화면을 캡쳐하여 pdf로 만듬
     if (triggerthumb) {
       const img = makeRectImage();
       dispatch(globalVariable({ triggerthumb: false }));
-      // if (pdfrun) {
-      //   const pdfrun1 = { ...pdfrun, image: img };
-      //   pdfReport(pdfrun1);
-      //   dispatch(globalVariable({ pdfrun: null }));
-      // }
     }
   }, [triggerthumb]);
+  useEffect(() => {
+    //분석후 화면을 캡쳐하여 pdf로 만듬
+    if (triggerpdf) {
+      const img = makeRectPdf();
+      dispatch(globalVariable({ triggerpdf: false }));
+    }
+  }, [triggerpdf]);
 
   useEffect(() => {
     //trigger when context mouseup
@@ -174,10 +160,8 @@ const DrawAnnotations = (props) => {
   }, [contextinfo]);
   useEffect(() => {
     //새로운 이미지가 로드될때 작동
-    // console.log("chg origin");
     setTimeout(() => {
       refreshImage("nude", true);
-
       refreshImage("added", true);
     }, 300);
   }, [originimg]);
@@ -258,7 +242,7 @@ const DrawAnnotations = (props) => {
 
     setTimeout(() => {
       setImgready(true);
-    }, 1500);
+    }, 0);
   };
 
   //filter by stable or unstable
@@ -295,6 +279,16 @@ const DrawAnnotations = (props) => {
     dispatch(globalVariable({ thumbimg: dataURL }));
     return dataURL;
   };
+  const makeRectPdf = () => {
+    //x=0,y=0로 이동 scale=1로 셋팅
+    moveTransform();
+    //dataURL캡쳐
+    var dataURL = stageRef.current.toDataURL();
+    //stage 원위치로 이동
+    resetTransform();
+    dispatch(globalVariable({ thumbpdf: dataURL }));
+    return dataURL;
+  };
 
   //click rect action
   const selectRect = (e) => {
@@ -317,14 +311,12 @@ const DrawAnnotations = (props) => {
 
     const mousePosition = e.target.getStage().getPointerPosition();
     currentShape = e.target;
-    console.log("click", e.target.attrs);
     setContexttype(e.target.attrs.stroke);
     //dispatch(globalVariable({ currentShape: e.target }));
     setAnchorPoint({
       x: e.target.getStage().getPointerPosition().x,
       y: e.target.getStage().getPointerPosition().y,
     });
-    setShow(true);
   };
   const contextClick = (type) => {
     const id = currentShape.attrs?.id;
@@ -352,7 +344,7 @@ const DrawAnnotations = (props) => {
         break;
     }
     setShow(false);
-
+    currentShape = null;
     dispatch(globalVariable({ position: [...posi] }));
   };
   //#endregion
@@ -384,8 +376,6 @@ const DrawAnnotations = (props) => {
       };
       let anno = [...position];
       anno.push(annotationToAdd);
-      localStorage.setItem("positionimsi", JSON.stringify(anno));
-
       setNewAnnotation([]);
       setContexttype(null);
       setAnchorPoint(event.target.getStage().getPointerPosition());
@@ -426,10 +416,13 @@ const DrawAnnotations = (props) => {
   const removeUndecided = (position) => {
     if (!position) return;
     var removed = _.remove(position, (o) => {
-      return (o.class === 3) | (o.stroke === "blue");
+      return o.class === 3;
     });
 
     if (removed.length > 0) {
+      localStorage.removeItem("positionimsi");
+      setShow(false);
+      currentShape = null;
       dispatch(globalVariable({ position: position }));
     }
   };

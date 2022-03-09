@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import { Spin, Input } from "antd";
 import { Button, Popconfirm } from "antd";
 import "antd/dist/antd.css";
-import "antd-button-color/dist/css/style.css";
+import "../css/spin.css";
 import $ from "jquery";
 import _ from "lodash";
 import addbtn from "../images/Add_btn.png";
-import Loading from "./loading";
 
 export const countGene = (data) => {
   //let result_json = JSON.parse(input);
@@ -77,6 +75,7 @@ const ImageForm = () => {
   function confirm(type) {
     setSpinshow(true);
     setTimeout(() => {
+      dispatch(globalVariable({ fillcolor: null }));
       reading(type);
     }, 1000);
   }
@@ -87,12 +86,12 @@ const ImageForm = () => {
         switch (k.class) {
           case 1:
           case 31:
-            return "blue";
+            return "#00A041";
           case 2:
           case 32:
             return "red";
           case 3:
-            return "#00A041";
+            return "blue";
           default:
             return null;
         }
@@ -148,7 +147,6 @@ const ImageForm = () => {
       },
     });
   }
-
   return (
     <>
       <div className="menutop">
@@ -161,7 +159,6 @@ const ImageForm = () => {
                 style={{ cursor: "pointer", width: 40 }}
               />
             </label>
-
             <input
               type="file"
               id="file"
@@ -172,13 +169,6 @@ const ImageForm = () => {
             <span style={{ paddingTop: 10 }}>
               <label>파일명</label>
             </span>
-            {/* <Input
-              disabled
-              id="file-path"
-              size="large"
-              type="text"
-              value={imgname}
-            /> */}
             <input
               className="fileInput"
               type="text"
@@ -191,7 +181,7 @@ const ImageForm = () => {
         <div
           style={{
             textAlign: "right",
-            visibility: "hidden",
+            // visibility: "hidden",
             marginRight: 20,
           }}
         >
@@ -219,12 +209,7 @@ const ImageForm = () => {
         </div>
       </div>
 
-      {spinshow && (
-        <Loading />
-        // <div className="spinwheel">
-        //   {/* <Spin size="large" tip="Loading..." /> */}
-        // </div>
-      )}
+      {spinshow && <div id="cover-spin" />}
     </>
   );
 };

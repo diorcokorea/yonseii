@@ -1,30 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import {
-  Space,
-  Button,
-  Slider,
-  Col,
-  Row,
-  notification,
-  Modal,
-  Popconfirm,
-} from "antd";
+import { Space, Button, Slider, notification, Modal, Popconfirm } from "antd";
 import "antd/dist/antd.css";
 import "antd-button-color/dist/css/style.css";
 import { AiOutlineDelete } from "react-icons/ai";
 import { BsBoundingBoxCircles } from "react-icons/bs";
 import { FiRotateCw } from "react-icons/fi";
-import PdfRender from "./pdfRender";
+import PdfRender from "./pdfdoc";
 import { PDFDownloadLink, PDFViewer, StyleSheet } from "@react-pdf/renderer";
 import _ from "lodash";
 import "../css/checkbox.css";
+import bgscale from "../images/bar-bg@2x.png";
 
 const styles = StyleSheet.create({
   viewer: {
-    width: window.innerWidth, //the pdf viewer will take up all of the width and height
-    height: window.innerHeight,
+    width: (window.innerWidth * 2) / 3 - 150, //the pdf viewer will take up all of the width and height
+    height: window.innerHeight - 200,
   },
 });
 
@@ -40,6 +32,7 @@ const ImageForm = () => {
   const keepposition = useSelector((state) => state.global.keepposition);
   const counting = useSelector((state) => state.global.counting);
   const thumbimg = useSelector((state) => state.global.thumbimg);
+  const thumbpdf = useSelector((state) => state.global.thumbpdf);
 
   const [imgname, setImgname] = useState("");
   const [readtype, setReadtype] = useState("stable");
@@ -48,6 +41,8 @@ const ImageForm = () => {
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
   const [isModal, setIsModal] = useState(false);
+  const [isModalInput, setIsModalInput] = useState(false);
+  const [pdfinput, setPdfinput] = useState({ title: "염색체 리포트" });
   const [btndisabled, setBtndisabled] = useState(true);
   const [btndisabled1, setBtndisabled1] = useState(true);
   useEffect(() => {
@@ -68,7 +63,6 @@ const ImageForm = () => {
     setIsUnstable(true);
   }, [thumbimg]);
   useEffect(() => {
-    console.log(fillcolor);
     if (fillcolor) setBtndisabled(false);
     else setBtndisabled(true);
   }, [fillcolor]);
@@ -105,7 +99,7 @@ const ImageForm = () => {
   };
 
   const reporting = () => {
-    dispatch(globalVariable({ triggerthumb: true }));
+    dispatch(globalVariable({ triggerpdf: true }));
     dispatch(
       globalVariable({
         pdfrun: {
@@ -155,25 +149,44 @@ const ImageForm = () => {
   const handleModal = () => {
     setIsModal(false);
   };
+  const pdfForm = (
+    <form>
+      <label>
+        Title:
+        <input
+          type="text"
+          value={pdfinput.title}
+          onChange={(e) => {
+            let newpdf = { ...pdfinput, title: e.target.value };
+            setPdfinput(newpdf);
+          }}
+        />
+      </label>
+    </form>
+  );
+  const handleModalInput = () => {
+    setIsModalInput(false);
+    setIsModal(true);
+    dispatch(globalVariable({ triggerpdf: true }));
+  };
   return (
     <>
       <div className="menubottom">
-        <Row>
-          <Col flex="60px">
-            <div className="title">
-              <label>확대</label>
-            </div>
-          </Col>
-          <Col flex="auto">
+        <Space>
+          <div className="title">
+            <label>확대</label>
+          </div>
+          <div>
             <Slider
               min={0}
               max={100}
               onChange={(value) => sliderChange(value)}
-              marks={marks}
               value={sidetype === "nude" ? scaleorigin : scale}
             />
-          </Col>
-        </Row>
+
+            <img src={bgscale} alt="" className="img_responsive" />
+          </div>
+        </Space>
 
         <div className={sidetype === "added" ? "resultnumber" : "hideitem"}>
           <label className="container">
@@ -255,40 +268,73 @@ const ImageForm = () => {
             </Popconfirm>
           </Space>
         </div>
+
         <div className={sidetype === "nude" && "hideitem"}>
+          {/* <PDFDownloadLink
+            document={<PdfRender img={thumbimg} />}
+            fileName="somename.pdf"
+          >
+            {({ blob, url, loading, error }) =>
+              loading ? "Loading document..." : "Download now!"
+            }
+          </PDFDownloadLink> */}
           <Button
             shape="round"
             size="large"
             style={{ backgroundColor: "#424242", color: "white" }}
-            onClick={reporting}
+            //onClick={reporting}
+            onClick={() => {
+              setIsModalInput(true);
+            }}
           >
             리포트 보기
           </Button>
         </div>
       </div>
-      <div style={{ display: "none" }}>
-        <PDFDownloadLink
-          document={<PdfRender img={thumbimg} />}
-          fileName="somename.pdf"
-        >
-          {({ blob, url, loading, error }) =>
-            loading ? "Loading document..." : "Download now!"
-          }
-        </PDFDownloadLink>
+      <Modal
+        title="Report Create"
+        visible={isModalInput}
+        onOk={handleModalInput}
+        onCancel={() => setIsModalInput(false)}
+      >
+        {pdfForm}
+      </Modal>
+      <Modal
+        title=" 염색체 리포트 Viewer"
+        style={{ top: 5 }}
+        visible={isModal}
+        onOk={handleModal}
+        onCancel={() => setIsModal(false)}
+        width={(window.innerWidth * 2) / 3 - 100}
+        footer={[
+          <Button
+            key="back"
+            onClick={() => setIsModal(false)}
+            style={{ marginRight: 5 }}
+          >
+            Cancel
+          </Button>,
 
-        <Button onClick={() => setIsModal(true)}>Show PDF</Button>
-        <Modal
-          title="Basic Modal"
-          visible={isModal}
-          onOk={handleModal}
-          onCancel={() => setIsModal(false)}
-          width={window.innerWidth}
-        >
-          <PDFViewer style={styles.viewer}>
-            <PdfRender img={thumbimg} />
-          </PDFViewer>
-        </Modal>
-      </div>
+          <PDFDownloadLink
+            document={<PdfRender img={thumbpdf} {...pdfinput} />}
+            fileName="somename.pdf"
+          >
+            {({ blob, url, loading, error }) =>
+              loading ? (
+                "Loading document..."
+              ) : (
+                <Button type="primary" onClick={() => setIsModal(false)}>
+                  Download
+                </Button>
+              )
+            }
+          </PDFDownloadLink>,
+        ]}
+      >
+        <PDFViewer style={styles.viewer} showToolbar={false}>
+          <PdfRender img={thumbpdf} {...pdfinput} />
+        </PDFViewer>
+      </Modal>
     </>
   );
 };
