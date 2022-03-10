@@ -27,6 +27,7 @@ const ImageForm = () => {
   const imgname = useSelector((state) => state.global.imgname);
 
   const [spinshow, setSpinshow] = useState(false);
+  // const [setvis, setSetvis] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -149,6 +150,9 @@ const ImageForm = () => {
   }
   return (
     <>
+      {/* <button type="link" onClick={() => setSetvis(true)}>
+        show pdf
+      </button> */}
       <div className="menutop">
         <form>
           <div className="file-input-wrapper">
@@ -208,7 +212,7 @@ const ImageForm = () => {
           </Popconfirm>
         </div>
       </div>
-
+      {/* {setvis && <Pdfreport />} */}
       {spinshow && <div id="cover-spin" />}
     </>
   );

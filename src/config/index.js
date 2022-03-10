@@ -13,6 +13,7 @@ const globalVar = {
   sidetype: "noimg", //nude, added
   fillcolor: null,
   drawtype: [true, true, true],
+  drawclone: null,
   currentShape: null,
   counting: null,
   triggerthumb: false,

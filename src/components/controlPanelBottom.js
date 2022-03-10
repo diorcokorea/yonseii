@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import { Space, Button, Slider, notification, Modal, Popconfirm } from "antd";
+import {
+  Space,
+  Button,
+  Slider,
+  notification,
+  Modal,
+  Popconfirm,
+  DatePicker,
+} from "antd";
 import "antd/dist/antd.css";
 import "antd-button-color/dist/css/style.css";
 import { AiOutlineDelete } from "react-icons/ai";
@@ -11,6 +19,7 @@ import PdfRender from "./pdfdoc";
 import { PDFDownloadLink, PDFViewer, StyleSheet } from "@react-pdf/renderer";
 import _ from "lodash";
 import "../css/checkbox.css";
+import "../css/form.css";
 import bgscale from "../images/bar-bg@2x.png";
 
 const styles = StyleSheet.create({
@@ -26,7 +35,9 @@ const ImageForm = () => {
   const scaleorigin = useSelector((state) => state.global.scaleorigin);
   const sidetype = useSelector((state) => state.global.sidetype);
   const draggable = useSelector((state) => state.global.draggable);
+  const readtype = useSelector((state) => state.global.readtype);
   const drawtype = useSelector((state) => state.global.drawtype);
+  const drawclone = useSelector((state) => state.global.drawclone);
   const fillcolor = useSelector((state) => state.global.fillcolor);
   const position = useSelector((state) => state.global.position);
   const keepposition = useSelector((state) => state.global.keepposition);
@@ -34,15 +45,13 @@ const ImageForm = () => {
   const thumbimg = useSelector((state) => state.global.thumbimg);
   const thumbpdf = useSelector((state) => state.global.thumbpdf);
 
-  const [imgname, setImgname] = useState("");
-  const [readtype, setReadtype] = useState("stable");
   const [isStable, setIsStable] = useState(false);
   const [isUnstable, setIsUnstable] = useState(false);
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const [isModalInput, setIsModalInput] = useState(false);
-  const [pdfinput, setPdfinput] = useState({ title: "염색체 리포트" });
+  const [pdfinput, setPdfinput] = useState({});
   const [btndisabled, setBtndisabled] = useState(true);
   const [btndisabled1, setBtndisabled1] = useState(true);
   useEffect(() => {
@@ -63,18 +72,38 @@ const ImageForm = () => {
     setIsUnstable(true);
   }, [thumbimg]);
   useEffect(() => {
+    setIsStable(drawtype[0]);
+    setIsUnstable(drawtype[1]);
+  }, [drawtype]);
+  useEffect(() => {
     if (fillcolor) setBtndisabled(false);
     else setBtndisabled(true);
   }, [fillcolor]);
-
-  function checkOnchange(type) {
+  // useEffect(() => {
+  //   let newpdf = {
+  //     ...pdfinput,
+  //     normal: counting.normal,
+  //     abnormal: counting.abnormal,
+  //   };
+  //   setPdfinput(newpdf);
+  // }, [counting]);
+  useEffect(() => {
+    let newpdf = {
+      ...pdfinput,
+      readtype,
+    };
+    setPdfinput(newpdf);
+  }, [readtype]);
+  function checkOnchange(type, src) {
     switch (type) {
       case "stable":
         setIsStable(!isStable);
+        if (src) updatePdf(type, isStable);
         dispatch(globalVariable({ drawtype: [!isStable, drawtype[1], true] }));
         break;
       case "unstable":
         setIsUnstable(!isUnstable);
+        if (src) updatePdf(type, isUnstable);
         dispatch(
           globalVariable({ drawtype: [drawtype[0], !isUnstable, true] })
         );
@@ -83,6 +112,22 @@ const ImageForm = () => {
         break;
     }
   }
+  const updatePdf = (type, value) => {
+    let newpdf = { ...pdfinput };
+    switch (type) {
+      case "stable":
+        if (value) delete newpdf.normal;
+        else newpdf = { ...newpdf, normal: counting.normal };
+        break;
+      case "unstable":
+        if (value) delete newpdf.abnormal;
+        else newpdf = { ...newpdf, abnormal: counting.abnormal };
+        break;
+      default:
+        break;
+    }
+    setPdfinput(newpdf);
+  };
   const removeAll = () => {
     dispatch(globalVariable({ position: keepposition }));
     dispatch(globalVariable({ fillcolor: null }));
@@ -98,39 +143,27 @@ const ImageForm = () => {
     localStorage.removeItem("selected");
   };
 
-  const reporting = () => {
-    dispatch(globalVariable({ triggerpdf: true }));
-    dispatch(
-      globalVariable({
-        pdfrun: {
-          image: thumbimg,
-          filepath: imgname,
-          classification: readtype,
-          result_json: JSON.stringify({ results: position }),
-          id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
-        },
-      })
-    );
-  };
+  // const reporting = () => {
+  //   dispatch(globalVariable({ triggerpdf: true }));
+  //   dispatch(
+  //     globalVariable({
+  //       pdfrun: {
+  //         image: thumbimg,
+  //         filepath: imgname,
+  //         classification: readtype,
+  //         result_json: JSON.stringify({ results: position }),
+  //         id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
+  //       },
+  //     })
+  //   );
+  // };
   const sliderChange = (value) => {
     if (value <= 0) value = 0;
     else if (value >= 100) value = 100;
     if (sidetype === "nude") dispatch(globalVariable({ scaleorigin: value }));
     else dispatch(globalVariable({ scale: value }));
   };
-  const marks = {
-    0: "0",
-    10: "1",
-    20: "2",
-    30: "3",
-    40: "4",
-    50: "5",
-    60: "6",
-    70: "7",
-    80: "8",
-    90: "9",
-    100: "10",
-  };
+
   const openNotification = () => {
     notification.open({
       message: "염색체 개수 초과",
@@ -149,20 +182,62 @@ const ImageForm = () => {
   const handleModal = () => {
     setIsModal(false);
   };
+
   const pdfForm = (
-    <form>
-      <label>
-        Title:
-        <input
-          type="text"
-          value={pdfinput.title}
-          onChange={(e) => {
-            let newpdf = { ...pdfinput, title: e.target.value };
-            setPdfinput(newpdf);
-          }}
-        />
-      </label>
-    </form>
+    <>
+      <form>
+        <label className="label">
+          이름
+          <input
+            className="input"
+            placeholder="이름을 입력해주세요."
+            value={pdfinput?.author}
+            onChange={(e) => {
+              let newpdf = { ...pdfinput, author: e.target.value };
+              setPdfinput(newpdf);
+            }}
+          />
+        </label>
+        <div className="label1">
+          <Space>
+            <label className="container">
+              <input
+                type="checkbox"
+                onChange={() => checkOnchange("stable", "pdf")}
+                checked={isStable}
+              />
+              <div className="text">정상</div>
+              <span className="checkmark"></span>
+            </label>
+            &nbsp;&nbsp;&nbsp;
+            <label className="container">
+              <input
+                type="checkbox"
+                onChange={() => checkOnchange("unstable", "pdf")}
+                checked={isUnstable}
+              />
+              <div className="text">이상</div>
+              <span className="checkmark"></span>
+            </label>
+          </Space>
+        </div>
+
+        <label className="label" for="start">
+          리포트 날짜
+          <DatePicker
+            placeholder="날짜를 선택하세요"
+            onChange={(date, dateString) => {
+              let newpdf = { ...pdfinput, date: dateString };
+              setPdfinput(newpdf);
+            }}
+            style={{
+              width: "100%",
+              height: 50,
+            }}
+          />
+        </label>
+      </form>
+    </>
   );
   const handleModalInput = () => {
     setIsModalInput(false);
@@ -195,7 +270,7 @@ const ImageForm = () => {
               onChange={() => checkOnchange("stable")}
               checked={isStable}
             />
-            정상
+            <div className="text">정상</div>
             <span className="checkmark"></span>
           </label>
           <input
@@ -211,7 +286,7 @@ const ImageForm = () => {
               onChange={() => checkOnchange("unstable")}
               checked={isUnstable}
             />
-            이상
+            <div className="text">이상</div>
             <span className="checkmark"></span>
           </label>
           <input
@@ -270,21 +345,28 @@ const ImageForm = () => {
         </div>
 
         <div className={sidetype === "nude" && "hideitem"}>
-          {/* <PDFDownloadLink
-            document={<PdfRender img={thumbimg} />}
-            fileName="somename.pdf"
-          >
-            {({ blob, url, loading, error }) =>
-              loading ? "Loading document..." : "Download now!"
-            }
-          </PDFDownloadLink> */}
           <Button
             shape="round"
             size="large"
             style={{ backgroundColor: "#424242", color: "white" }}
-            //onClick={reporting}
             onClick={() => {
               setIsModalInput(true);
+              dispatch(globalVariable({ drawclone: drawtype }));
+              const datestring = new Date()
+                .toLocaleString("en-us", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                })
+                .replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2");
+
+              setPdfinput({
+                ...pdfinput,
+                date: datestring,
+                readtype,
+                normal: counting.normal,
+                abnormal: counting.abnormal,
+              });
             }}
           >
             리포트 보기
@@ -295,16 +377,22 @@ const ImageForm = () => {
         title="Report Create"
         visible={isModalInput}
         onOk={handleModalInput}
-        onCancel={() => setIsModalInput(false)}
+        onCancel={() => {
+          setIsModalInput(false);
+          dispatch(globalVariable({ drawclone: null }));
+        }}
       >
         {pdfForm}
       </Modal>
       <Modal
-        title=" 염색체 리포트 Viewer"
+        title=" 리포트 보기"
         style={{ top: 5 }}
         visible={isModal}
         onOk={handleModal}
-        onCancel={() => setIsModal(false)}
+        onCancel={() => {
+          setIsModal(false);
+          dispatch(globalVariable({ drawclone: null }));
+        }}
         width={(window.innerWidth * 2) / 3 - 100}
         footer={[
           <Button
@@ -317,7 +405,7 @@ const ImageForm = () => {
 
           <PDFDownloadLink
             document={<PdfRender img={thumbpdf} {...pdfinput} />}
-            fileName="somename.pdf"
+            fileName="genereport.pdf"
           >
             {({ blob, url, loading, error }) =>
               loading ? (

@@ -44,6 +44,7 @@ const DrawAnnotations = (props) => {
   const scale = useSelector((state) => state.global.scale);
   const scaleorigin = useSelector((state) => state.global.scaleorigin);
   const drawtype = useSelector((state) => state.global.drawtype);
+  const drawclone = useSelector((state) => state.global.drawclone);
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
   const fillcolor = useSelector((state) => state.global.fillcolor);
@@ -61,7 +62,6 @@ const DrawAnnotations = (props) => {
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
   const [show, setShow] = useState();
-  const [showing, setShowing] = useState();
   const [imgready, setImgready] = useState(false);
   const [contexttype, setContexttype] = useState();
   const [anchorPoint, setAnchorPoint] = useState();
@@ -270,23 +270,20 @@ const DrawAnnotations = (props) => {
     return _.uniqBy(rtn, "id");
   };
   const makeRectImage = () => {
-    //x=0,y=0로 이동 scale=1로 셋팅
-    //moveTransform();
     //dataURL캡쳐
     var dataURL = stageRef.current.toDataURL();
-    //stage 원위치로 이동
-    //resetTransform();
     dispatch(globalVariable({ thumbimg: dataURL }));
     return dataURL;
   };
   const makeRectPdf = () => {
     //x=0,y=0로 이동 scale=1로 셋팅
     moveTransform();
-    //dataURL캡쳐
     var dataURL = stageRef.current.toDataURL();
     //stage 원위치로 이동
     resetTransform();
     dispatch(globalVariable({ thumbpdf: dataURL }));
+    dispatch(globalVariable({ drawtype: drawclone }));
+    dispatch(globalVariable({ drawclone: null }));
     return dataURL;
   };
 
@@ -433,10 +430,9 @@ const DrawAnnotations = (props) => {
   const resizeStage = (stage, scaleinfo, deltaY) => {
     if (!stage) return;
     var oldScale = stage.scaleX();
-    // if ((oldScale === 0) | !oldScale) oldScale = 1;
-    var pointer = stage.getPointerPosition();
 
     //마우스 포인터에 따른 액션으로 하려면 cernter, relatedTo대신 사용
+    //var pointer = stage.getPointerPosition();
     // var mousePointTo = {
     //   x: (pointer.x - stage.x()) / oldScale,
     //   y: (pointer.y - stage.y()) / oldScale,
@@ -490,9 +486,6 @@ const DrawAnnotations = (props) => {
     e.evt.preventDefault();
 
     const newScale = resizeStage(stage, null, e.evt.deltaY);
-
-    // if ((newScale <= initScale) | (newScale >= initScale + scaleBy * 10))
-    //   return;
     let scalesize;
 
     if (Math.abs(newScale - initScale) < 0.00001) scalesize = 0;
@@ -508,41 +501,17 @@ const DrawAnnotations = (props) => {
 
   //#endregion
 
-  const handleDragEnd = (e) => {
-    const stage = e.target.getStage();
-    e.evt.preventDefault();
-    var pointer = stage.getPointerPosition();
+  // const handleDragEnd = (e) => {
+  //   const stage = e.target.getStage();
+  //   e.evt.preventDefault();
+  //   var pointer = stage.getPointerPosition();
 
-    // setSaveposition({
-    //   ...saveposition,
-    //   [sidetype]: { ...pointer, scale: stage.scaleX() },
-    // });
-  };
+  //   // setSaveposition({
+  //   //   ...saveposition,
+  //   //   [sidetype]: { ...pointer, scale: stage.scaleX() },
+  //   // });
+  // };
 
-  const centerTransform = () => {
-    const transform = stageRef.current.getAbsoluteTransform();
-    const matrix = transform.getMatrix();
-    //innerwidth를 구함
-    //imagewidth를 구함
-    const x = (window.innerWidth - 200) / 2;
-    transform.m[4] = x;
-    transform.m[5] = 10;
-    transform.m[0] = 1.1;
-    transform.m[3] = 0.75;
-
-    stageRef.current.setAttrs(transform.decompose());
-  };
-  const imageTransform = () => {
-    const transform = imageRef.current.getAbsoluteTransform();
-    let img_width = lionsize.width;
-    const x = (window.innerWidth - img_width) / 2;
-    transform.m[4] = x;
-    transform.m[5] = 10;
-    transform.m[0] = 1;
-    transform.m[3] = 1;
-
-    imageRef.current.setAttrs(transform.decompose());
-  };
   const resetTransform = () => {
     stageRef.current.setAttrs(savedTransform.decompose());
   };
@@ -553,7 +522,6 @@ const DrawAnnotations = (props) => {
   const moveTransform = () => {
     //x=y=0, scalex:1.1, scaley=0.9로 transform
     const transform = stageRef.current.getAbsoluteTransform();
-    const scalex = transform.m[0];
     transform.m[0] = 0.8;
     transform.m[3] = 0.8;
     transform.m[4] = 0; //(370 * scalex) / 0.695;
@@ -562,29 +530,13 @@ const DrawAnnotations = (props) => {
   };
   return (
     <div id="stage-parent">
-      {/* <button
-        onClick={() =>
-          console.log(
-            imageRef.current.getAbsoluteTransform(),
-            imageRef.current.getAbsoluteTransform().getMatrix(),
-            imageRef.current.getAbsoluteTransform().decompose()
-          )
-        }
-      >
-        transform
-      </button>
-      <button onClick={centerTransform}>transformtest</button>
-      <button onClick={imageTransform}>imageformtest</button>
-      <button onClick={saveTransform}>saveTransform</button>
-      <button onClick={resetTransform}>resetTransform</button> 
-      <button onClick={() => console.log(position)}>posi</button>*/}
       <div id="noimg" style={{ display: "none" }}>
         <img src={noimg} width={300} />
       </div>
       <div id="srccontainer">
         <Stage
           onWheel={handleWheel}
-          onDragEnd={handleDragEnd}
+          // onDragEnd={handleDragEnd}
           width={size2.width}
           height={size2.height}
           scaleX={scale2}
@@ -604,7 +556,7 @@ const DrawAnnotations = (props) => {
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           onWheel={handleWheel}
-          onDragEnd={handleDragEnd}
+          // onDragEnd={handleDragEnd}
           draggable={draggable}
           ref={stageRef}
           width={size1.width}
