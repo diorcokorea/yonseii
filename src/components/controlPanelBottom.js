@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
 import {
@@ -18,6 +18,7 @@ import { FiRotateCw } from "react-icons/fi";
 import PdfRender from "./pdfdoc";
 import { PDFDownloadLink, PDFViewer, StyleSheet } from "@react-pdf/renderer";
 import _ from "lodash";
+import $ from "jquery";
 import "../css/checkbox.css";
 import "../css/form.css";
 import bgscale from "../images/bar-bg@2x.png";
@@ -44,7 +45,7 @@ const ImageForm = () => {
   const counting = useSelector((state) => state.global.counting);
   const thumbimg = useSelector((state) => state.global.thumbimg);
   const thumbpdf = useSelector((state) => state.global.thumbpdf);
-
+  const dnLinkbtn = useRef(null);
   const [isStable, setIsStable] = useState(false);
   const [isUnstable, setIsUnstable] = useState(false);
   const [plustype, setPlustype] = useState(false);
@@ -346,6 +347,7 @@ const ImageForm = () => {
 
         <div className={sidetype === "nude" && "hideitem"}>
           <Button
+            id="btnReport"
             shape="round"
             size="large"
             style={{ backgroundColor: "#424242", color: "white" }}
@@ -381,6 +383,7 @@ const ImageForm = () => {
           setIsModalInput(false);
           dispatch(globalVariable({ drawclone: null }));
         }}
+        destroyOnClose={true}
       >
         {pdfForm}
       </Modal>
@@ -388,6 +391,7 @@ const ImageForm = () => {
         title=" 리포트 보기"
         style={{ top: 5 }}
         visible={isModal}
+        destroyOnClose={true}
         onOk={handleModal}
         onCancel={() => {
           setIsModal(false);
@@ -402,16 +406,15 @@ const ImageForm = () => {
           >
             Cancel
           </Button>,
-
           <PDFDownloadLink
             document={<PdfRender img={thumbpdf} {...pdfinput} />}
             fileName="genereport.pdf"
           >
             {({ blob, url, loading, error }) =>
               loading ? (
-                "Loading document..."
+                "Loading..."
               ) : (
-                <Button type="primary" onClick={() => setIsModal(false)}>
+                <Button onClick={() => setIsModal(false)} type="success">
                   Download
                 </Button>
               )
