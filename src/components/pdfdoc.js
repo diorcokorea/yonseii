@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Font,
+  usePDF,
 } from "@react-pdf/renderer";
 import logo from "../images/Header.png";
 import malgunfont from "../font/malgun/malgun668.ttf";
@@ -65,7 +66,19 @@ const Quixote = ({ img, author, readtype, date, normal, abnormal }) => {
     </Document>
   );
 };
+export const PdfDown = (props) => {
+  const [instance, updateInstance] = usePDF({ document: props.doc });
 
+  if (instance.loading) return <div>Loading ...</div>;
+
+  if (instance.error) return <div>Something went wrong: {instance.error}</div>;
+
+  return (
+    <a href={instance.url} download="test.pdf">
+      Download
+    </a>
+  );
+};
 Font.register({
   family: "Malgun Gothic",
   format: "truetype",

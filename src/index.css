@@ -1,5 +1,5 @@
 body {
-  margin: 0;
+  /* margin: 0; */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -133,22 +133,18 @@ li:hover {
   opacity: 1;
   transition: opacity 0.5s linear;
 }
-.spinwheel {
-  position: absolute;
-  top: 50%;
-  left: 300px;
-  z-index: 10000;
-}
+
 .pressed {
   background-color: grey;
 }
 .box {
   margin: 20px 0 20px 0;
   overflow: hidden;
+  height: 276px;
 }
 .box img {
-  max-width: 230px;
-  height: 230px;
+  width: 230px;
+  height: 220px;
   object-fit: cover;
 }
 
@@ -182,40 +178,36 @@ li:hover {
   border-radius: 5px;
 }
 
-.file-input-wrapper {
-  margin: 2px;
-  overflow: hidden;
+.upload-btn-wrapper {
   position: relative;
-  width: 618px;
+  overflow: hidden;
+  display: inline-block;
   cursor: pointer;
 }
-
-.file-input-wrapper > input[type="file"] {
-  font-size: 40px;
+.uploadimg {
+  display: inline-block;
+  color: white;
+  cursor: pointer !important;
+}
+.upload-btn-wrapper input[type="file"] {
+  font-size: 100px;
   position: absolute;
+  left: 0;
   top: 0;
-  right: 0;
   opacity: 0;
   cursor: pointer;
 }
-.file-input-wrapper > span {
+.upload-label label {
   margin-left: 10px;
-  font-size: 18px;
+  font-size: 16px;
 }
-.file-input-wrapper > label {
-  margin-left: 10px;
-  font-size: 18px;
-}
-.file-input-wrapper > input[type="text"] {
+.upload-label > input[type="text"] {
   clear: both;
   background-color: #d9d9d9;
   border-radius: 20px;
   display: inline-block;
   margin: 0 0 0 15px;
   padding: 0px 0 0 5px;
-  width: 321px;
-}
-.file-input-wrapper > image {
   width: 321px;
 }
 .pdf {
@@ -268,4 +260,29 @@ li:hover {
   position: fixed;
   top: 40%;
   left: 50%;
+}
+.ant-modal {
+  width: 70%;
+  transform-origin: 85px 43px;
+  overflow: hidden;
+}
+.pdfhide {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.pdfshow {
+  display: block;
+  position: fixed;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 1000;
 }

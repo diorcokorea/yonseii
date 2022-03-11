@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import { Button, Popconfirm } from "antd";
+import { Button, Popconfirm, Space } from "antd";
 import "antd/dist/antd.css";
 import "../css/spin.css";
 import $ from "jquery";
@@ -25,9 +25,10 @@ const ImageForm = () => {
   const thumbimg = useSelector((state) => state.global.thumbimg);
   const originimg = useSelector((state) => state.global.originimg);
   const imgname = useSelector((state) => state.global.imgname);
+  const spinshow = useSelector((state) => state.global.spinshow);
+  const transforminit = useSelector((state) => state.global.transforminit);
 
-  const [spinshow, setSpinshow] = useState(false);
-  // const [setvis, setSetvis] = useState(false);
+  const [showspin, setShowspin] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -51,9 +52,9 @@ const ImageForm = () => {
   }
   const reset = () => {
     dispatch(globalVariable({ imgname: "" }));
-    dispatch(globalVariable({ originimg: "" }));
-    dispatch(globalVariable({ sidetype: "" }));
-    // dispatch(globalVariable({ position: null }));
+    dispatch(globalVariable({ originimg: null }));
+    dispatch(globalVariable({ sidetype: "nude" }));
+    $(".menutop div").css({ visibility: "hidden" });
   };
   function fileUpload(e) {
     //$(".menutop div").css({ visibility: "hidden" });
@@ -74,9 +75,11 @@ const ImageForm = () => {
     };
   }
   function confirm(type) {
-    setSpinshow(true);
+    setShowspin(true);
     setTimeout(() => {
       dispatch(globalVariable({ fillcolor: null }));
+      dispatch(globalVariable({ triggerreset: true }));
+
       reading(type);
     }, 1000);
   }
@@ -109,7 +112,7 @@ const ImageForm = () => {
     });
   };
   function reading(type) {
-    setSpinshow(false);
+    //dispatch(globalVariable({ spinshow: false }));
     $.ajax({
       //url: `http://localhost:99/reading`,
       url: `${process.env.REACT_APP_SERVER}/reading`,
@@ -139,22 +142,45 @@ const ImageForm = () => {
           dispatch(globalVariable({ readtype: type }));
           dispatch(globalVariable({ sidetype: "added" }));
           dispatch(globalVariable({ triggerthumb: true }));
+          setShowspin(false);
         }
       },
       error: function (e) {
         let message = "error : " + e;
-
+        setShowspin(false);
         console.log("error", e);
       },
     });
   }
   return (
     <>
-      {/* <button type="link" onClick={() => setSetvis(true)}>
-        show pdf
-      </button> */}
       <div className="menutop">
-        <form>
+        <Space style={{ marginBottom: 5 }}>
+          <input
+            type="file"
+            id="upload"
+            name="myfile"
+            hidden
+            accept=".png,.jpg,.jpeg,.gif"
+            onChange={fileUpload}
+          />
+          <label className="uploadimg" for="upload">
+            <img src={addbtn} alt="fileupload" style={{ width: 40 }} />
+          </label>
+          <div className="upload-label">
+            <span style={{ paddingTop: 10 }}>
+              <label>파일명</label>
+            </span>
+            <input
+              className="fileInput"
+              type="text"
+              disabled
+              value={imgname}
+              placeholder="파일을 추가해주세요"
+            ></input>
+          </div>
+        </Space>
+        {/* <form>
           <div className="file-input-wrapper">
             <label htmlFor="file">
               <img
@@ -180,12 +206,12 @@ const ImageForm = () => {
               placeholder="파일을 추가해주세요"
             ></input>
           </div>
-        </form>
+        </form> */}
 
         <div
           style={{
             textAlign: "right",
-            // visibility: "hidden",
+            visibility: "hidden",
             marginRight: 20,
           }}
         >
@@ -211,9 +237,8 @@ const ImageForm = () => {
             </Button>
           </Popconfirm>
         </div>
+        {showspin && <div id="cover-spin" />}
       </div>
-      {/* {setvis && <Pdfreport />} */}
-      {spinshow && <div id="cover-spin" />}
     </>
   );
 };

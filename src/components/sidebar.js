@@ -11,6 +11,7 @@ const Sidebar = () => {
   //dispatch(globalVariable({ display: "list" }));
   const thumb = useSelector((state) => state.global.thumbimg);
   const originimg = useSelector((state) => state.global.originimg);
+  const thumborigin = useSelector((state) => state.global.thumborigin);
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
   const [imgthumb, setImgthumb] = useState(noimage);
@@ -66,7 +67,7 @@ const Sidebar = () => {
                 setSelected2(false);
               }}
             >
-              <img src={imgorigin} description="" alt="" />
+              <img src={thumborigin} description="" alt="" />
             </div>
           </div>
           {showResult && (

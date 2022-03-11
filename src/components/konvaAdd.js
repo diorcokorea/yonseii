@@ -4,6 +4,7 @@ import { globalVariable } from "../actions";
 import { Stage, Layer, Rect, Image } from "react-konva";
 import ContextMenu from "./contextmenu";
 import { countGene } from "./controlPanelTop";
+
 import useImage from "use-image";
 import _ from "lodash";
 import $ from "jquery";
@@ -36,7 +37,7 @@ const LionImage = ({ originimg, stage }) => {
 
   return <Image image={image} />;
 };
-let currentShape;
+
 let lionsize;
 
 const DrawAnnotations = (props) => {
@@ -53,7 +54,10 @@ const DrawAnnotations = (props) => {
   const draggable = useSelector((state) => state.global.draggable);
   const triggerthumb = useSelector((state) => state.global.triggerthumb);
   const triggerpdf = useSelector((state) => state.global.triggerpdf);
+  const triggerreset = useSelector((state) => state.global.triggerreset);
+  const transforminit = useSelector((state) => state.global.transforminit);
   const contextinfo = useSelector((state) => state.global.contextinfo);
+  const spinshow = useSelector((state) => state.global.spinshow);
   const stageRef = React.useRef(null);
   const imageRef = React.useRef(null);
   const layerRef = React.useRef(null);
@@ -116,6 +120,7 @@ const DrawAnnotations = (props) => {
     $("#noimg").show();
     setAnchorPoint(null);
     setShow(false);
+    localStorage.removeItem("shape");
     stageRef.current.on("click", (e) => {
       localStorage.removeItem("selected");
       if (e.target.attrs.name === "rect") {
@@ -123,10 +128,14 @@ const DrawAnnotations = (props) => {
       } else {
         dispatch(globalVariable({ fillcolor: null }));
         const imsi = localStorage.getItem("positionimsi");
-        if (imsi && currentShape && !currentShape?._id) {
+        let shape = localStorage.getItem("shape");
+        setShow(false);
+        console.log(shape);
+        if (shape) shape = JSON.parse(shape);
+        else return;
+        if (imsi && !shape._id) {
           removeUndecided(JSON.parse(imsi));
         }
-        setShow(false);
       }
     });
   }, []);
@@ -139,6 +148,7 @@ const DrawAnnotations = (props) => {
   useEffect(() => {
     if (triggerthumb) {
       const img = makeRectImage();
+      saveTransform();
       dispatch(globalVariable({ triggerthumb: false }));
     }
   }, [triggerthumb]);
@@ -149,12 +159,22 @@ const DrawAnnotations = (props) => {
       dispatch(globalVariable({ triggerpdf: false }));
     }
   }, [triggerpdf]);
+  useEffect(() => {
+    //분석후 화면을 캡쳐하여 pdf로 만듬
+    if (triggerreset && stageRef.current) {
+      resetTransform();
+      dispatch(globalVariable({ triggerreset: false }));
+    }
+  }, [triggerreset]);
 
   useEffect(() => {
     //trigger when context mouseup
     if (contextinfo) {
       setShow(true);
-      currentShape = { attrs: { id: contextinfo } };
+      localStorage.setItem(
+        "shape",
+        JSON.stringify({ attrs: { id: contextinfo } })
+      );
       dispatch(globalVariable({ contextinfo: null }));
     }
   }, [contextinfo]);
@@ -163,6 +183,14 @@ const DrawAnnotations = (props) => {
     setTimeout(() => {
       refreshImage("nude", true);
       refreshImage("added", true);
+      if (imageRef.current) {
+        var dataURL = imageRef.current.toDataURL();
+        dispatch(globalVariable({ thumborigin: dataURL }));
+      }
+      const transform = stageRef.current.getAbsoluteTransform();
+      console.log(transform);
+
+      dispatch(globalVariable({ transforminit: transform }));
     }, 300);
   }, [originimg]);
 
@@ -240,6 +268,7 @@ const DrawAnnotations = (props) => {
     setInitScale(1.0 / ratio);
     stg.setAttrs(transform.decompose());
 
+    console.log(transform);
     setTimeout(() => {
       setImgready(true);
     }, 0);
@@ -299,24 +328,41 @@ const DrawAnnotations = (props) => {
         id: e.target.attrs.id,
       })
     );
+    localStorage.setItem(
+      "shape",
+      JSON.stringify({
+        attrs: e.target.attrs,
+        x: e.target.attrs.x,
+        y: e.target.attrs.y,
+        id: e.target.attrs.id,
+      })
+    );
     localStorage.setItem("annotation", JSON.stringify(annotationsToDraw));
-    dispatch(globalVariable({ fillcolor: e.target.attrs.id }));
+    if (e.evt.which === 1)
+      dispatch(globalVariable({ fillcolor: e.target.attrs.id }));
   };
   //#region contextmenu
   const handleContextMenu = (e) => {
     e.evt.preventDefault(true); // NB!!!! Remember the ***TRUE***
 
     const mousePosition = e.target.getStage().getPointerPosition();
-    currentShape = e.target;
+
+    localStorage.setItem("shape", JSON.stringify(e.target));
     setContexttype(e.target.attrs.stroke);
-    //dispatch(globalVariable({ currentShape: e.target }));
     setAnchorPoint({
       x: e.target.getStage().getPointerPosition().x,
       y: e.target.getStage().getPointerPosition().y,
     });
   };
   const contextClick = (type) => {
-    const id = currentShape.attrs?.id;
+    let xy = localStorage.getItem("selected");
+    if (!xy) xy = localStorage.getItem("shape");
+    if (xy) xy = JSON.parse(xy);
+
+    dispatch(globalVariable({ fillcolor: null }));
+    console.log(xy.attrs, xy.attrs.id);
+    let id = xy?.attrs?.id;
+    if (!id) id = xy.id;
     let posi = _.cloneDeep(position);
     var index = _.findIndex(posi, (o) => {
       return o.id === id;
@@ -324,10 +370,11 @@ const DrawAnnotations = (props) => {
     const obj = _.find(posi, (o) => {
       return o.id === id;
     });
-
+    console.log(xy, "id:", id, obj, posi);
     switch (type) {
       case "delete":
         posi.splice(index, 1);
+
         break;
       case "stable":
         obj.class = obj.class === 3 ? (obj.class = 31) : (obj.class = 1);
@@ -341,7 +388,9 @@ const DrawAnnotations = (props) => {
         break;
     }
     setShow(false);
-    currentShape = null;
+    dispatch(globalVariable({ fillcolor: null }));
+    localStorage.removeItem("selected");
+    localStorage.removeItem("shape");
     dispatch(globalVariable({ position: [...posi] }));
   };
   //#endregion
@@ -371,6 +420,7 @@ const DrawAnnotations = (props) => {
         class: 3,
         id: "rect" + idnum,
       };
+
       let anno = [...position];
       anno.push(annotationToAdd);
       setNewAnnotation([]);
@@ -419,7 +469,7 @@ const DrawAnnotations = (props) => {
     if (removed.length > 0) {
       localStorage.removeItem("positionimsi");
       setShow(false);
-      currentShape = null;
+      localStorage.removeItem("shape");
       dispatch(globalVariable({ position: position }));
     }
   };
@@ -513,7 +563,7 @@ const DrawAnnotations = (props) => {
   // };
 
   const resetTransform = () => {
-    stageRef.current.setAttrs(savedTransform.decompose());
+    if (savedTransform) stageRef.current.setAttrs(savedTransform.decompose());
   };
   const saveTransform = () => {
     const transform = stageRef.current.getAbsoluteTransform();
