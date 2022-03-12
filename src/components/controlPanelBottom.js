@@ -10,7 +10,6 @@ import {
   Modal,
   DatePicker,
 } from "antd";
-import Popup from "./Popup";
 import "antd/dist/antd.css";
 import "antd-button-color/dist/css/style.css";
 import { AiOutlineDelete } from "react-icons/ai";
@@ -26,7 +25,6 @@ import "../css/checkbox.css";
 import "../css/form.css";
 import bgscale from "../images/bar-bg.png";
 import moment from "moment";
-import NewWindow from "react-new-window";
 
 const styles = StyleSheet.create({
   viewer: {
@@ -43,7 +41,7 @@ const ImageForm = () => {
   const draggable = useSelector((state) => state.global.draggable);
   const readtype = useSelector((state) => state.global.readtype);
   const drawtype = useSelector((state) => state.global.drawtype);
-  const drawclone = useSelector((state) => state.global.drawclone);
+  const drawpdf = useSelector((state) => state.global.drawpdf);
   const fillcolor = useSelector((state) => state.global.fillcolor);
   const position = useSelector((state) => state.global.position);
   const keepposition = useSelector((state) => state.global.keepposition);
@@ -54,13 +52,15 @@ const ImageForm = () => {
 
   const [isStable, setIsStable] = useState(false);
   const [isUnstable, setIsUnstable] = useState(false);
+  const [pdfStable, setPdfStable] = useState(false);
+  const [pdfUnstable, setPdfUnstable] = useState(false);
   const [plustype, setPlustype] = useState(false);
   const [minustype, setMinustype] = useState(false);
-  const [isModal, setIsModal] = useState(false);
   const [isModalInput, setIsModalInput] = useState(false);
   const [pdfinput, setPdfinput] = useState({});
   const [btndisabled, setBtndisabled] = useState(true);
   const [btndisabled1, setBtndisabled1] = useState(true);
+
   useEffect(() => {
     if (_.isEqual(position, keepposition)) {
       setBtndisabled(true);
@@ -78,10 +78,19 @@ const ImageForm = () => {
     setIsStable(true);
     setIsUnstable(true);
   }, [thumbimg]);
+
   useEffect(() => {
-    setIsStable(drawtype[0]);
-    setIsUnstable(drawtype[1]);
+    if (drawtype) {
+      setIsStable(drawtype[0]);
+      setIsUnstable(drawtype[1]);
+    }
   }, [drawtype]);
+  useEffect(() => {
+    if (drawpdf) {
+      setPdfStable(drawpdf[0]);
+      setPdfUnstable(drawpdf[1]);
+    }
+  }, [drawpdf]);
   useEffect(() => {
     if (fillcolor) setBtndisabled(false);
     else setBtndisabled(true);
@@ -94,40 +103,48 @@ const ImageForm = () => {
     };
     setPdfinput(newpdf);
   }, [readtype]);
-  function checkOnchange(type, src) {
+  function checkOnchange(type) {
     switch (type) {
       case "stable":
         setIsStable(!isStable);
-        if (src) updatePdf(type, isStable);
         dispatch(globalVariable({ drawtype: [!isStable, drawtype[1], true] }));
+
         break;
       case "unstable":
         setIsUnstable(!isUnstable);
-        if (src) updatePdf(type, isUnstable);
         dispatch(
           globalVariable({ drawtype: [drawtype[0], !isUnstable, true] })
         );
+
         break;
       default:
         break;
     }
   }
-  const updatePdf = (type, value) => {
+  function pdfOnchange(type) {
     let newpdf = { ...pdfinput };
     switch (type) {
       case "stable":
-        if (value) delete newpdf.normal;
+        setPdfStable(!pdfStable);
+        if (pdfStable) delete newpdf.normal;
         else newpdf = { ...newpdf, normal: counting.normal };
+        dispatch(globalVariable({ drawpdf: [!pdfStable, drawpdf[1], true] }));
+
         break;
       case "unstable":
-        if (value) delete newpdf.abnormal;
+        setPdfUnstable(!pdfUnstable);
+        if (pdfUnstable) delete newpdf.abnormal;
         else newpdf = { ...newpdf, abnormal: counting.abnormal };
+        dispatch(globalVariable({ drawpdf: [drawpdf[0], !pdfUnstable, true] }));
+
         break;
       default:
         break;
     }
+    dispatch(globalVariable({ triggerpdf: true }));
     setPdfinput(newpdf);
-  };
+  }
+
   const removeAll = () => {
     dispatch(globalVariable({ position: keepposition }));
     dispatch(globalVariable({ fillcolor: null }));
@@ -147,20 +164,6 @@ const ImageForm = () => {
     dispatch(globalVariable({ fillcolor: null }));
   };
 
-  // const reporting = () => {
-  //   dispatch(globalVariable({ triggerpdf: true }));
-  //   dispatch(
-  //     globalVariable({
-  //       pdfrun: {
-  //         image: thumbimg,
-  //         filepath: imgname,
-  //         classification: readtype,
-  //         result_json: JSON.stringify({ results: position }),
-  //         id: "\\media\\2022\\02\\22\\Ush1qfL6E-yGt9xXS0bn2MzpLY0VyRF2\\1",
-  //       },
-  //     })
-  //   );
-  // };
   const sliderChange = (value) => {
     if (value <= 0) value = 0;
     else if (value >= 100) value = 100;
@@ -183,12 +186,10 @@ const ImageForm = () => {
       dispatch(globalVariable({ draggable: plustype }));
     }
   };
-  const handleModal = () => {
-    setIsModal(false);
-  };
+
   const handleModalInput = () => {
     //check  이름, 날짜
-    console.log(pdfinput);
+
     if ((pdfinput.author === "") | (pdfinput.date === "")) {
       notification["warning"]({
         message: "Warning",
@@ -196,15 +197,29 @@ const ImageForm = () => {
       });
     } else {
       setIsModalInput(false);
-      setIsModal(true);
-
-      dispatch(globalVariable({ openPopup: true }));
-      dispatch(globalVariable({ triggerpdf: true }));
     }
   };
   const popupClose = () => {
-    dispatch(globalVariable({ openPopup: false }));
-    dispatch(globalVariable({ drawclone: null }));
+    handleModalInput();
+  };
+  const handleReportSet = () => {
+    dispatch(globalVariable({ triggerpdf: true }));
+    const datestring = new Date()
+      .toLocaleString("en-us", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2");
+
+    setPdfinput({
+      ...pdfinput,
+      author: imgname && imgname.split(".")[0],
+      date: datestring,
+      readtype,
+      normal: counting.normal,
+      abnormal: counting.abnormal,
+    });
   };
 
   const pdfForm = (
@@ -227,8 +242,8 @@ const ImageForm = () => {
             <label className="container">
               <input
                 type="checkbox"
-                onChange={() => checkOnchange("stable", "pdf")}
-                checked={isStable}
+                onChange={() => pdfOnchange("stable")}
+                checked={pdfStable}
               />
               <div className="text">정상</div>
               <span className="checkmark"></span>
@@ -237,13 +252,14 @@ const ImageForm = () => {
             <label className="container">
               <input
                 type="checkbox"
-                onChange={() => checkOnchange("unstable", "pdf")}
-                checked={isUnstable}
+                onChange={() => pdfOnchange("unstable")}
+                checked={pdfUnstable}
               />
               <div className="text">이상</div>
               <span className="checkmark"></span>
             </label>
           </Space>
+          <img crossOrigin="anonymous" width={400} src={thumbpdf} alt="" />
         </div>
 
         <label className="label" for="start">
@@ -264,7 +280,62 @@ const ImageForm = () => {
       </form>
     </div>
   );
-
+  const reportSetting = (
+    <div
+      class="modal fade"
+      id="exampleModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">
+              Modal title
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body"> {pdfForm}</div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+              onClick={() => {
+                setIsModalInput(false);
+              }}
+              style={{ marginRight: 5 }}
+            >
+              취소
+            </button>
+            <PDFDownloadLink
+              document={<PdfRender img={thumbpdf} {...pdfinput} />}
+              fileName={`${pdfinput.author}.pdf`}
+            >
+              {({ blob, url, loading, error }) => (
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  onClick={popupClose}
+                >
+                  {loading ? "생성중..." : "다운로드"}
+                </button>
+              )}
+            </PDFDownloadLink>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   return (
     <>
       <div className="menubottom">
@@ -367,114 +438,24 @@ const ImageForm = () => {
         </div>
 
         <div className={sidetype === "nude" && "hideitem"}>
-          <Button
-            id="btnReport"
-            shape="round"
-            size="large"
-            style={{ backgroundColor: "#424242", color: "white" }}
-            onClick={() => {
-              setIsModalInput(true);
-              dispatch(globalVariable({ drawclone: drawtype }));
-              const datestring = new Date()
-                .toLocaleString("en-us", {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                })
-                .replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2");
-
-              setPdfinput({
-                ...pdfinput,
-                author: imgname && imgname.split(".")[0],
-                date: datestring,
-                readtype,
-                normal: counting.normal,
-                abnormal: counting.abnormal,
-              });
-              setTimeout(() => {
-                $("body").css("width", "100%");
-              }, 1);
+          <button
+            type="button"
+            class="btn rounded-pill"
+            style={{
+              backgroundColor: "#424242",
+              color: "white",
+              borderRadius: "40px",
+              width: 130,
             }}
+            data-toggle="modal"
+            data-target="#exampleModalCenter"
+            onClick={handleReportSet}
           >
             리포트 보기
-          </Button>
+          </button>
+          {reportSetting}
         </div>
       </div>
-      <Modal
-        title="리포트 설정"
-        visible={isModalInput}
-        onOk={handleModalInput}
-        onCancel={() => {
-          setIsModalInput(false);
-          dispatch(globalVariable({ drawclone: null }));
-        }}
-        destroyOnClose={true}
-        width={800}
-        footer={[
-          <Button
-            key="create"
-            type="success"
-            onClick={handleModalInput}
-            style={{ marginRight: 5 }}
-          >
-            만들기
-          </Button>,
-          <Button
-            key="back"
-            onClick={() => {
-              setIsModalInput(false);
-              dispatch(globalVariable({ drawclone: null }));
-            }}
-            style={{ marginRight: 5 }}
-          >
-            취소
-          </Button>,
-        ]}
-      >
-        {pdfForm}
-      </Modal>
-      <div className="pdfhide">
-        <div style={{ textAlign: "center", textDecoration: "underline" }}>
-          <PDFDownloadLink
-            document={<PdfRender img={thumbpdf} {...pdfinput} />}
-            fileName="fee_acceptance.pdf"
-          >
-            {({ blob, url, loading, error }) =>
-              loading ? (
-                "Loading document..."
-              ) : (
-                <Button type="success" onClick={popupClose}>
-                  Download
-                </Button>
-              )
-            }
-          </PDFDownloadLink>
-        </div>
-        <PDFViewer style={styles.viewer} showToolbar={false}>
-          <PdfRender img={thumbpdf} {...pdfinput} />
-        </PDFViewer>
-      </div>
-      {/* <Modal
-        title=" 리포트 보기"
-        style={{ top: 5 }}
-        visible={isModal}
-        destroyOnClose={true}
-        onCancel={() => {
-          setIsModal(false);
-          dispatch(globalVariable({ drawclone: null }));
-        }}
-        width={(window.innerWidth * 2) / 3 - 100}
-        footer={[]}
-      >
-        <PDFViewer
-          style={styles.viewer}
-          showToolbar={true}
-          fileName="somename.pdf"
-        >
-          <PdfRender img={thumbpdf} {...pdfinput} />
-          <PdfDown />
-        </PDFViewer>
-      </Modal> */}
     </>
   );
 };

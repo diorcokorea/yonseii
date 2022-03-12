@@ -6,6 +6,7 @@ const globalVar = {
   originimg: null,
   thumbimg: null,
   thumborigin: null,
+  thumbpdf: null,
   originurl: null,
   position: null,
   keepposition: null,
@@ -14,7 +15,7 @@ const globalVar = {
   sidetype: "noimg", //nude, added
   fillcolor: null,
   drawtype: [true, true, true],
-  drawclone: null,
+  drawpdf: [true, true, true],
   counting: null,
   triggerthumb: false,
   triggerpdf: false,
@@ -23,6 +24,7 @@ const globalVar = {
   transforminit: null,
   openPopup: false,
   spinshow: false,
+  togglers: {},
 };
 
 export { globalVar };

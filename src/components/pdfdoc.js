@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Document,
   Page,
@@ -7,13 +7,11 @@ import {
   StyleSheet,
   Image,
   Font,
-  usePDF,
 } from "@react-pdf/renderer";
 import logo from "../images/Header.png";
 import malgunfont from "../font/malgun/malgun668.ttf";
 
-const Quixote = ({ img, author, readtype, date, normal, abnormal }) => {
-  console.log(author, readtype, date, normal, abnormal);
+const ReactPdf = ({ img, author, readtype, date, normal, abnormal }) => {
   return (
     <Document>
       <Page style={styles.body}>
@@ -66,19 +64,7 @@ const Quixote = ({ img, author, readtype, date, normal, abnormal }) => {
     </Document>
   );
 };
-export const PdfDown = (props) => {
-  const [instance, updateInstance] = usePDF({ document: props.doc });
 
-  if (instance.loading) return <div>Loading ...</div>;
-
-  if (instance.error) return <div>Something went wrong: {instance.error}</div>;
-
-  return (
-    <a href={instance.url} download="test.pdf">
-      Download
-    </a>
-  );
-};
 Font.register({
   family: "Malgun Gothic",
   format: "truetype",
@@ -106,13 +92,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
   },
-  // dateContainer: {
-  //   flexDirection: "row",
-  //   position: "absolute",
-  //   bottom: 0,
-  //   left: 0,
-  //   backgroundColor: "#F1F1F1",
-  // },
+
   invoiceDate: {
     fontSize: 12,
     fontFamily: "Malgun Gothic",
@@ -202,4 +182,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Quixote;
+export default ReactPdf;

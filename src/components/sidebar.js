@@ -8,7 +8,6 @@ const { Title } = Typography;
 
 const Sidebar = () => {
   const dispatch = useDispatch();
-  //dispatch(globalVariable({ display: "list" }));
   const thumb = useSelector((state) => state.global.thumbimg);
   const originimg = useSelector((state) => state.global.originimg);
   const thumborigin = useSelector((state) => state.global.thumborigin);
@@ -53,7 +52,7 @@ const Sidebar = () => {
   return (
     <div className="sidebar">
       {showSide && (
-        <Space direction="vertical">
+        <div>
           <div className="box">
             <div className="sidetitle">
               <Title level={4}>입력 이미지</Title>
@@ -97,7 +96,7 @@ const Sidebar = () => {
               </div>
             </div>
           )}
-        </Space>
+        </div>
       )}
     </div>
   );

@@ -4,11 +4,9 @@ import { globalVariable } from "../actions";
 import { Stage, Layer, Rect, Image } from "react-konva";
 import ContextMenu from "./contextmenu";
 import { countGene } from "./controlPanelTop";
-
 import useImage from "use-image";
 import _ from "lodash";
 import $ from "jquery";
-
 import noimg from "../images/View-no image.png";
 
 const addStroke = (data) => {
@@ -45,7 +43,7 @@ const DrawAnnotations = (props) => {
   const scale = useSelector((state) => state.global.scale);
   const scaleorigin = useSelector((state) => state.global.scaleorigin);
   const drawtype = useSelector((state) => state.global.drawtype);
-  const drawclone = useSelector((state) => state.global.drawclone);
+  const drawpdf = useSelector((state) => state.global.drawpdf);
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
   const fillcolor = useSelector((state) => state.global.fillcolor);
@@ -55,16 +53,16 @@ const DrawAnnotations = (props) => {
   const triggerthumb = useSelector((state) => state.global.triggerthumb);
   const triggerpdf = useSelector((state) => state.global.triggerpdf);
   const triggerreset = useSelector((state) => state.global.triggerreset);
-  const transforminit = useSelector((state) => state.global.transforminit);
   const contextinfo = useSelector((state) => state.global.contextinfo);
-  const spinshow = useSelector((state) => state.global.spinshow);
   const stageRef = React.useRef(null);
+  const pdfRef = React.useRef(null);
   const imageRef = React.useRef(null);
   const layerRef = React.useRef(null);
 
   const [annotations, setAnnotations] = useState([]);
   const [newAnnotation, setNewAnnotation] = useState([]);
   let [annotationsToDraw, setAnnotationsToDraw] = useState();
+  let [pdfToDraw, setPdfToDraw] = useState();
   const [show, setShow] = useState();
   const [imgready, setImgready] = useState(false);
   const [contexttype, setContexttype] = useState();
@@ -72,6 +70,8 @@ const DrawAnnotations = (props) => {
   const [translate, setTranslate] = useState();
   const [initScale, setInitScale] = useState();
   const [savedTransform, setSavedTransform] = useState();
+  const [dragaction, setDragaction] = useState(false);
+
   const [size1, setSize1] = useState({
     width: window.innerWidth - 270,
     height: window.innerHeight - 110,
@@ -102,7 +102,14 @@ const DrawAnnotations = (props) => {
 
   useEffect(() => {
     if (position) {
-      const filtered = drawByType(position);
+      const filtered = drawByType(drawpdf, position);
+      setPdfToDraw(filtered);
+    }
+  }, [position, drawpdf]);
+  useEffect(() => {
+    if (position) {
+      const filtered = drawByType(drawtype, position);
+      console.log(filtered);
       setAnnotationsToDraw(filtered);
 
       localStorage.setItem("positionimsi", JSON.stringify(position));
@@ -129,11 +136,10 @@ const DrawAnnotations = (props) => {
         dispatch(globalVariable({ fillcolor: null }));
         const imsi = localStorage.getItem("positionimsi");
         let shape = localStorage.getItem("shape");
-        setShow(false);
-        console.log(shape);
+        setShow(false, imsi);
         if (shape) shape = JSON.parse(shape);
         else return;
-        if (imsi && !shape._id) {
+        if (imsi && !shape._id && !dragaction) {
           removeUndecided(JSON.parse(imsi));
         }
       }
@@ -154,10 +160,15 @@ const DrawAnnotations = (props) => {
   }, [triggerthumb]);
   useEffect(() => {
     //분석후 화면을 캡쳐하여 pdf로 만듬
-    if (triggerpdf) {
-      const img = makeRectPdf();
-      dispatch(globalVariable({ triggerpdf: false }));
-    }
+    setTimeout(() => {
+      if (triggerpdf) {
+        const img = makeRectPdf();
+        dispatch(globalVariable({ triggerpdf: false }));
+      }
+    }, 0);
+    setTimeout(() => {
+      $("body").css("width", "100%");
+    }, 100);
   }, [triggerpdf]);
   useEffect(() => {
     //분석후 화면을 캡쳐하여 pdf로 만듬
@@ -187,10 +198,6 @@ const DrawAnnotations = (props) => {
         var dataURL = imageRef.current.toDataURL();
         dispatch(globalVariable({ thumborigin: dataURL }));
       }
-      const transform = stageRef.current.getAbsoluteTransform();
-      console.log(transform);
-
-      dispatch(globalVariable({ transforminit: transform }));
     }, 300);
   }, [originimg]);
 
@@ -210,7 +217,6 @@ const DrawAnnotations = (props) => {
       default:
         $("#srccontainer").hide();
         $("#resultcontainer").hide();
-        //$("#noimg").show();
         break;
     }
   }, [sidetype, imgready]);
@@ -268,28 +274,29 @@ const DrawAnnotations = (props) => {
     setInitScale(1.0 / ratio);
     stg.setAttrs(transform.decompose());
 
-    console.log(transform);
     setTimeout(() => {
       setImgready(true);
     }, 0);
   };
 
   //filter by stable or unstable
-  const drawByType = (rdata) => {
+  const drawByType = (drawtypeinfo, rdata) => {
+    console.log(drawtypeinfo);
+    if (!drawtypeinfo) return;
     let rtn = [];
-    if (drawtype[2]) {
+    if (drawtypeinfo[2]) {
       const stableArr = _.filter(rdata, function (o) {
-        return o.class === 3 || o.class === 31 || o.class === 32;
+        return o.class === 3;
       });
       rtn = [...rtn, ...stableArr];
     }
-    if (drawtype[0]) {
+    if (drawtypeinfo[0]) {
       const stableArr = _.filter(rdata, function (o) {
         return o.class === 1 || o.class === 31;
       });
       rtn = [...rtn, ...stableArr];
     }
-    if (drawtype[1]) {
+    if (drawtypeinfo[1]) {
       const stableArr = _.filter(rdata, function (o) {
         return o.class === 2 || o.class === 32;
       });
@@ -306,13 +313,11 @@ const DrawAnnotations = (props) => {
   };
   const makeRectPdf = () => {
     //x=0,y=0로 이동 scale=1로 셋팅
-    moveTransform();
-    var dataURL = stageRef.current.toDataURL();
+    moveTransform(pdfRef.current);
+    var dataURL = pdfRef.current.toDataURL();
     //stage 원위치로 이동
-    resetTransform();
+    resetTransform(pdfRef.current);
     dispatch(globalVariable({ thumbpdf: dataURL }));
-    dispatch(globalVariable({ drawtype: drawclone }));
-    dispatch(globalVariable({ drawclone: null }));
     return dataURL;
   };
 
@@ -360,7 +365,7 @@ const DrawAnnotations = (props) => {
     if (xy) xy = JSON.parse(xy);
 
     dispatch(globalVariable({ fillcolor: null }));
-    console.log(xy.attrs, xy.attrs.id);
+
     let id = xy?.attrs?.id;
     if (!id) id = xy.id;
     let posi = _.cloneDeep(position);
@@ -370,7 +375,6 @@ const DrawAnnotations = (props) => {
     const obj = _.find(posi, (o) => {
       return o.id === id;
     });
-    console.log(xy, "id:", id, obj, posi);
     switch (type) {
       case "delete":
         posi.splice(index, 1);
@@ -438,27 +442,21 @@ const DrawAnnotations = (props) => {
       const sx = parseInt(newAnnotation[0].x);
       const sy = parseInt(newAnnotation[0].y);
       const { x, y } = event.target.getStage().getRelativePointerPosition();
-      setNewAnnotation([
-        {
-          x: sx,
-          y: sy,
-          width: x - sx,
-          height: y - sy,
-          key: "0",
-        },
-      ]);
+      const newadd = {
+        x: sx,
+        y: sy,
+        width: x - sx,
+        height: y - sy,
+        key: "0",
+      };
+      setNewAnnotation([newadd]);
 
-      setAnnotationsToDraw([
-        ...position,
-        {
-          x: sx,
-          y: sy,
-          width: x - sx,
-          height: y - sy,
-          key: "0",
-        },
-      ]);
+      const filtered = drawByType(drawtype, position);
+      const filterpdf = drawByType(drawpdf, position);
+      setAnnotationsToDraw([...filtered, newadd]);
+      setPdfToDraw([...filterpdf, newadd]);
     }
+    setDragaction(true);
   };
   const removeUndecided = (position) => {
     if (!position) return;
@@ -472,6 +470,7 @@ const DrawAnnotations = (props) => {
       localStorage.removeItem("shape");
       dispatch(globalVariable({ position: position }));
     }
+    setDragaction(false);
   };
   //#endregion
 
@@ -551,33 +550,27 @@ const DrawAnnotations = (props) => {
 
   //#endregion
 
-  // const handleDragEnd = (e) => {
-  //   const stage = e.target.getStage();
-  //   e.evt.preventDefault();
-  //   var pointer = stage.getPointerPosition();
-
-  //   // setSaveposition({
-  //   //   ...saveposition,
-  //   //   [sidetype]: { ...pointer, scale: stage.scaleX() },
-  //   // });
-  // };
-
-  const resetTransform = () => {
-    if (savedTransform) stageRef.current.setAttrs(savedTransform.decompose());
+  const resetTransform = (ref) => {
+    if (!ref) ref = stageRef.current;
+    if (savedTransform) {
+      ref.setAttrs(savedTransform.decompose());
+    }
   };
   const saveTransform = () => {
     const transform = stageRef.current.getAbsoluteTransform();
     setSavedTransform(_.cloneDeep(transform));
   };
-  const moveTransform = () => {
+  const moveTransform = (ref) => {
+    if (!ref) ref = stageRef.current;
     //x=y=0, scalex:1.1, scaley=0.9로 transform
-    const transform = stageRef.current.getAbsoluteTransform();
+    let transform = ref.getAbsoluteTransform();
     transform.m[0] = 0.8;
     transform.m[3] = 0.8;
     transform.m[4] = 0; //(370 * scalex) / 0.695;
     transform.m[5] = -20;
-    stageRef.current.setAttrs(transform.decompose());
+    ref.setAttrs(transform.decompose());
   };
+
   return (
     <div id="stage-parent">
       <div id="noimg" style={{ display: "none" }}>
@@ -641,6 +634,37 @@ const DrawAnnotations = (props) => {
         </Stage>
       </div>
 
+      <div id="pdfcontainer" style={{ display: "none" }}>
+        <Stage
+          ref={pdfRef}
+          width={size1.width}
+          height={size1.height}
+          scaleX={scale1}
+          scaleY={scale1}
+        >
+          <Layer>
+            <LionImage originimg={originimg} stage={pdfRef.current} />
+            {pdfToDraw &&
+              pdfToDraw.map((value, i) => {
+                return (
+                  <>
+                    <Rect
+                      x={value.x}
+                      y={value.y}
+                      id={value.id}
+                      width={value.width}
+                      height={value.height}
+                      stroke={value.stroke ? value.stroke : "blue"}
+                      strokeWidth={fillcolor === value.id ? 5 : 1}
+                      name="rect"
+                      centeredScaling={true}
+                    />
+                  </>
+                );
+              })}
+          </Layer>
+        </Stage>
+      </div>
       {show && (
         <ContextMenu
           position={anchorPoint}

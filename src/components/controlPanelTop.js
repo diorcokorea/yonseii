@@ -22,11 +22,8 @@ export const countGene = (data) => {
 
 const ImageForm = () => {
   const dispatch = useDispatch();
-  const thumbimg = useSelector((state) => state.global.thumbimg);
   const originimg = useSelector((state) => state.global.originimg);
   const imgname = useSelector((state) => state.global.imgname);
-  const spinshow = useSelector((state) => state.global.spinshow);
-  const transforminit = useSelector((state) => state.global.transforminit);
 
   const [showspin, setShowspin] = useState(false);
 
@@ -52,12 +49,12 @@ const ImageForm = () => {
   }
   const reset = () => {
     dispatch(globalVariable({ imgname: "" }));
-    dispatch(globalVariable({ originimg: null }));
-    dispatch(globalVariable({ sidetype: "nude" }));
+    dispatch(globalVariable({ originimg: "" }));
     $(".menutop div").css({ visibility: "hidden" });
   };
   function fileUpload(e) {
     //$(".menutop div").css({ visibility: "hidden" });
+    setShowspin(true);
     let URL = window.webkitURL || window.URL;
     if (e.target.files.length === 0) return;
     let url = URL.createObjectURL(e.target.files[0]);
@@ -67,10 +64,14 @@ const ImageForm = () => {
     img.onload = function () {
       getBase64(e.target.files[0]).then((data) => {
         const dt = _.cloneDeep(data);
+        dispatch(globalVariable({ sidetype: "nude" }));
         dispatch(globalVariable({ imgname: e.target.files[0].name }));
         dispatch(globalVariable({ originimg: dt }));
-        dispatch(globalVariable({ sidetype: "nude" }));
         $(".menutop div").css({ visibility: "visible" });
+        e.target.value = "";
+        setTimeout(() => {
+          setShowspin(false);
+        }, 500);
       });
     };
   }
@@ -78,6 +79,8 @@ const ImageForm = () => {
     setShowspin(true);
     setTimeout(() => {
       dispatch(globalVariable({ fillcolor: null }));
+      dispatch(globalVariable({ scaleorigin: 0 }));
+      dispatch(globalVariable({ scale: 0 }));
       dispatch(globalVariable({ triggerreset: true }));
 
       reading(type);
@@ -112,9 +115,7 @@ const ImageForm = () => {
     });
   };
   function reading(type) {
-    //dispatch(globalVariable({ spinshow: false }));
     $.ajax({
-      //url: `http://localhost:99/reading`,
       url: `${process.env.REACT_APP_SERVER}/reading`,
       type: "POST",
       dataType: "json",
@@ -180,34 +181,6 @@ const ImageForm = () => {
             ></input>
           </div>
         </Space>
-        {/* <form>
-          <div className="file-input-wrapper">
-            <label htmlFor="file">
-              <img
-                src={addbtn}
-                alt="fileupload"
-                style={{ cursor: "pointer", width: 40 }}
-              />
-            </label>
-            <input
-              type="file"
-              id="file"
-              accept=".png,.jpg,.jpeg,.gif"
-              className="uploadButton"
-              onChange={fileUpload}
-            />
-            <span style={{ paddingTop: 10 }}>
-              <label>파일명</label>
-            </span>
-            <input
-              className="fileInput"
-              type="text"
-              value={imgname}
-              placeholder="파일을 추가해주세요"
-            ></input>
-          </div>
-        </form> */}
-
         <div
           style={{
             textAlign: "right",
