@@ -11,21 +11,19 @@ import {
 import logo from "../images/Header.png";
 import malgunfont from "../font/malgun/malgun668.ttf";
 
-const ReactPdf = ({ img, author, readtype, date, normal, abnormal }) => {
+const ReactPdf = ({ img, name, readtype, date, normal, abnormal }) => {
   return (
-    <Document>
+    <Document title={name}>
       <Page style={styles.body}>
         <Image style={styles.logo} src={logo} />
         <Text style={styles.title}>염색체 개수 리포트</Text>
-        <View style={styles.invoiceNoContainer}>
+        <View style={styles.containerInarow}>
           <Text style={styles.text}>이름:</Text>
-          <Text style={styles.textmargin}>{author}</Text>
-
+          <Text style={styles.textmargin}>{name}</Text>
           <Text style={styles.text}>구분:</Text>
           <Text style={styles.textmargin}>
             {readtype === "stable" ? "안정형" : "불안정형"}
           </Text>
-
           {normal && (
             <>
               <Text style={styles.text}>정상:</Text>
@@ -39,16 +37,16 @@ const ReactPdf = ({ img, author, readtype, date, normal, abnormal }) => {
             </>
           )}
         </View>
-
-        <Image
-          style={styles.image}
-          src={
-            img
-              ? img
-              : "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483141.jpg"
-          }
-        />
-
+        <View style={styles.imgContainer}>
+          <Image
+            style={styles.image}
+            src={
+              img
+                ? img
+                : "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483141.jpg"
+            }
+          />
+        </View>
         <View style={styles.dateContainer}>
           <Text style={styles.text}>리포트 생성 날짜: </Text>
           <Text style={styles.text}>{date}</Text>
@@ -82,33 +80,18 @@ const styles = StyleSheet.create({
     color: "green",
     fontFamily: "Malgun Gothic",
   },
-  invoiceNoContainer: {
+  containerInarow: {
     flexDirection: "row",
     marginTop: 36,
     borderBottomColor: "grey",
     borderBottomWidth: 1,
   },
-  invoiceDateContainer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-
-  invoiceDate: {
-    fontSize: 12,
-    fontFamily: "Malgun Gothic",
-  },
-  author: {
+  name: {
     fontSize: 12,
     textAlign: "center",
     fontFamily: "Malgun Gothic",
   },
-  subtitle: {
-    fontSize: 18,
-    margin: 12,
-  },
-  label: {
-    width: 60,
-  },
+
   text: {
     marginRight: 6,
     fontSize: 14,
@@ -135,13 +118,25 @@ const styles = StyleSheet.create({
     textAlign: "justify",
     fontFamily: "Malgun Gothic",
   },
-
+  imgContainer: {
+    paddingTop: 20,
+    objectFit: "fill",
+  },
   image: {
-    width: 740,
+    maxWidth: 740,
+
+    objectFit: "cover",
     marginLeft: "auto",
     marginRight: "auto",
     border: "solid 1px white",
   },
+  // image: {
+  //   position: "absolute",
+  //   minWidth: "100%",
+  //   minHeight: "100%",
+  //   height: "100%",
+  //   width: "100%",
+  // },
   logo: {
     width: "100vw",
     display: "flex",
@@ -164,11 +159,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "grey",
   },
-  bottomLine: {
-    flexDirection: "row",
-    borderBottomColor: "#3778C2",
-    borderBottomWidth: 1,
-  },
+
   dateContainer: {
     flexDirection: "row",
     position: "absolute",

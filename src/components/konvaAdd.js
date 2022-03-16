@@ -80,7 +80,9 @@ const DrawAnnotations = (props) => {
     width: window.innerWidth - 270,
     height: window.innerHeight - 110,
   });
-
+  useEffect(() => {
+    if (fillcolor === null) setShow(false);
+  }, [fillcolor]);
   useEffect(() => {
     const checkSize = () => {
       const info = {
@@ -119,7 +121,7 @@ const DrawAnnotations = (props) => {
           counting: { normal: rtn.normal, abnormal: rtn.abnormal },
         })
       );
-      saveTransform();
+      // saveTransform();
     }
   }, [position, drawtype]);
 
@@ -139,6 +141,7 @@ const DrawAnnotations = (props) => {
         setShow(false, imsi);
         if (shape) shape = JSON.parse(shape);
         else return;
+        console.log(shape.id, dragaction);
         if (imsi && !shape._id && !dragaction) {
           removeUndecided(JSON.parse(imsi));
         }
@@ -153,7 +156,9 @@ const DrawAnnotations = (props) => {
 
   useEffect(() => {
     if (triggerthumb) {
-      const img = makeRectImage();
+      console.log("any chg???");
+      refreshImage("added", true);
+      makeRectImage();
       saveTransform();
       dispatch(globalVariable({ triggerthumb: false }));
     }
@@ -162,7 +167,7 @@ const DrawAnnotations = (props) => {
     //분석후 화면을 캡쳐하여 pdf로 만듬
     setTimeout(() => {
       if (triggerpdf) {
-        const img = makeRectPdf();
+        makeRectPdf();
         dispatch(globalVariable({ triggerpdf: false }));
       }
     }, 0);
@@ -193,7 +198,7 @@ const DrawAnnotations = (props) => {
     //새로운 이미지가 로드될때 작동
     setTimeout(() => {
       refreshImage("nude", true);
-      refreshImage("added", true);
+      //refreshImage("added", true);
       if (imageRef.current) {
         var dataURL = imageRef.current.toDataURL();
         dispatch(globalVariable({ thumborigin: dataURL }));
@@ -243,7 +248,7 @@ const DrawAnnotations = (props) => {
     let height = stg.getHeight();
 
     width = window.innerWidth - 270;
-    height = window.innerHeight - 110;
+    height = window.innerHeight - 120;
 
     let img_width = lionsize.width;
     let img_height = lionsize.height;
@@ -256,21 +261,22 @@ const DrawAnnotations = (props) => {
     if (!transform.m[2]) transform.m[2] = 0;
     if (!transform.m[3]) transform.m[3] = 0;
 
-    let trans = translate;
-    if (!trans && runTrans) {
-      //transform
-      trans = {
-        x: (width - img_width / ratio) / 2.0,
-        y: (height - img_height / ratio) / 2.0,
-      };
-      transform.translate(trans.x, trans.y);
-      setTranslate(trans);
-    }
+    // let trans = translate;
+    // if (!trans && runTrans) {
+    //   //transform
+    //   trans = {
+    //     x: (width - img_width / ratio) / 2.0,
+    //     y: (height - img_height / ratio) / 2.0,
+    //   };
+    //   transform.translate(trans.x, trans.y);
+    //   setTranslate(trans);
+    // }
     transform.m[4] = (width - img_width / ratio) / 2.0;
     transform.m[5] = (height - img_height / ratio) / 2.0 - 40;
     transform.m[0] = transform.m[3] = 1 / ratio;
 
     //transform.scale(1.0 / ratio, 1.0 / ratio);
+    console.log(transform.m);
     setInitScale(1.0 / ratio);
     stg.setAttrs(transform.decompose());
 
@@ -378,7 +384,6 @@ const DrawAnnotations = (props) => {
     switch (type) {
       case "delete":
         posi.splice(index, 1);
-
         break;
       case "stable":
         obj.class = obj.class === 3 ? (obj.class = 31) : (obj.class = 1);
@@ -396,6 +401,7 @@ const DrawAnnotations = (props) => {
     localStorage.removeItem("selected");
     localStorage.removeItem("shape");
     dispatch(globalVariable({ position: [...posi] }));
+    localStorage.removeItem("contextactive");
   };
   //#endregion
 
@@ -424,7 +430,7 @@ const DrawAnnotations = (props) => {
         class: 3,
         id: "rect" + idnum,
       };
-
+      localStorage.setItem("contextactive", 1);
       let anno = [...position];
       anno.push(annotationToAdd);
       setNewAnnotation([]);
@@ -471,6 +477,7 @@ const DrawAnnotations = (props) => {
       dispatch(globalVariable({ position: position }));
     }
     setDragaction(false);
+    localStorage.removeItem("contextactive");
   };
   //#endregion
 
@@ -558,6 +565,7 @@ const DrawAnnotations = (props) => {
   };
   const saveTransform = () => {
     const transform = stageRef.current.getAbsoluteTransform();
+    console.log(transform.m);
     setSavedTransform(_.cloneDeep(transform));
   };
   const moveTransform = (ref) => {
@@ -579,7 +587,6 @@ const DrawAnnotations = (props) => {
       <div id="srccontainer">
         <Stage
           onWheel={handleWheel}
-          // onDragEnd={handleDragEnd}
           width={size2.width}
           height={size2.height}
           scaleX={scale2}
@@ -599,7 +606,6 @@ const DrawAnnotations = (props) => {
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           onWheel={handleWheel}
-          // onDragEnd={handleDragEnd}
           draggable={draggable}
           ref={stageRef}
           width={size1.width}
@@ -638,7 +644,7 @@ const DrawAnnotations = (props) => {
         <Stage
           ref={pdfRef}
           width={size1.width}
-          height={size1.height}
+          height={size1.height + 250}
           scaleX={scale1}
           scaleY={scale1}
         >

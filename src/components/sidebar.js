@@ -14,7 +14,6 @@ const Sidebar = () => {
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
   const [imgthumb, setImgthumb] = useState(noimage);
-  const [imgorigin, setImgorigin] = useState(noimage);
   const [selected1, setSelected1] = useState(false);
   const [selected2, setSelected2] = useState(false);
   const [showSide, setShowside] = useState(false);
@@ -28,8 +27,6 @@ const Sidebar = () => {
       setImgthumb(thumb);
       setShowResult(true);
     }
-    if (!originimg) setImgorigin(noimage);
-    else setImgorigin(originimg);
     if (originimg) setShowside(true);
   }, [thumb, originimg]);
   useEffect(() => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import { Button, Popconfirm, Space } from "antd";
+import { Button, Space, Popover } from "antd";
 import "antd/dist/antd.css";
 import "../css/spin.css";
 import $ from "jquery";
@@ -26,6 +26,8 @@ const ImageForm = () => {
   const imgname = useSelector((state) => state.global.imgname);
 
   const [showspin, setShowspin] = useState(false);
+  const [visible1, setVisible1] = useState(false);
+  const [visible2, setVisible2] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -71,6 +73,13 @@ const ImageForm = () => {
         e.target.value = "";
         setTimeout(() => {
           setShowspin(false);
+          $(".ant-popover-buttons").map((k, i) => {
+            const fst = $(k).find("button:first");
+            $(k).find("button:first").remove();
+            setTimeout(() => {
+              $(k).append(fst);
+            }, 10);
+          });
         }, 500);
       });
     };
@@ -156,7 +165,7 @@ const ImageForm = () => {
   return (
     <>
       <div className="menutop">
-        <Space style={{ marginBottom: 5 }}>
+        <Space>
           <input
             type="file"
             id="upload"
@@ -185,30 +194,64 @@ const ImageForm = () => {
           style={{
             textAlign: "right",
             visibility: "hidden",
-            marginRight: 20,
+            marginRight: 15,
           }}
         >
-          <Popconfirm
+          <Popover
+            content={
+              <Space>
+                <Button
+                  size="small"
+                  style={{ backgroundColor: "#00A041", color: "white" }}
+                  onClick={() => confirm("stable")}
+                >
+                  확인
+                </Button>
+                &npsp;
+                <Button size="small" onClick={() => setVisible1(false)}>
+                  취소
+                </Button>
+              </Space>
+            }
             title="안정형 판독을 진행하시겠습니까?"
-            onConfirm={() => confirm("stable")}
-            okText="확인"
-            cancelText="취소"
+            placement="topLeft"
+            trigger="click"
+            visible={visible1}
+            onVisibleChange={() => setVisible1(!visible1)}
           >
-            <Button shape="round" size="large" type="success">
+            <Button shape="round" size="large" className="button">
               안정형 판독
             </Button>
-          </Popconfirm>
+          </Popover>
           &nbsp;&nbsp;
-          <Popconfirm
+          <Popover
+            content={
+              <div className="confirmBtn">
+                <div>
+                  <Button
+                    size="small"
+                    style={{ backgroundColor: "#00A041", color: "white" }}
+                    onClick={() => confirm("unstable")}
+                  >
+                    확인
+                  </Button>
+                  &npsp;
+                  <Button size="small" onClick={() => setVisible2(false)}>
+                    취소
+                  </Button>
+                </div>
+              </div>
+            }
             title="불안정형 판독을 진행하시겠습니까?"
-            onConfirm={() => confirm("unstable")}
-            okText="확인"
-            cancelText="취소"
+            placement="topLeft"
+            trigger="click"
+            visible={visible2}
+            onVisibleChange={() => setVisible2(!visible2)}
           >
-            <Button shape="round" size="large" type="success">
+            <Button shape="round" size="large" className="button">
               불안정형 판독
             </Button>
-          </Popconfirm>
+          </Popover>
         </div>
         {showspin && <div id="cover-spin" />}
       </div>

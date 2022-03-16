@@ -1,0 +1,22 @@
+.modal.modal-fullscreen .modal-dialog {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+.modal-black {
+  background-color: #272c30;
+  border: none;
+}
+.modal.modal-fullscreen .modal-content {
+  height: auto;
+  height: 100vh;
+  border-radius: 0;
+  border: none;
+  background-color: #525659;
+}
+
+.modal.modal-fullscreen .modal-body {
+  overflow-y: auto;
+}

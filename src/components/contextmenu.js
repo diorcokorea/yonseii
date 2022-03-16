@@ -18,7 +18,6 @@ const ContextMenu = ({ position, contextClick, type }) => {
       break;
     default:
       menus.splice(2, 1, { act: "delete", title: "취소" });
-
       break;
   }
   return (

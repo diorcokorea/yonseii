@@ -8,6 +8,7 @@ body {
   overflow-y: hidden;
   background-color: white;
 }
+
 .heading {
   display: grid;
   grid-template-columns: 310px 1fr 140px;
@@ -19,7 +20,15 @@ body {
   grid-template-columns: 270px 1fr;
   justify-items: stretch;
 }
-
+.button {
+  color: white !important;
+  background-color: #00a041 !important;
+}
+.buttonContainer {
+  text-align: "right" !important;
+  visibility: "hidden";
+  margin-right: 10px;
+}
 .sidebar {
   padding: 20px 15px;
   background-color: rgb(244, 245, 247);
@@ -35,7 +44,7 @@ body {
 }
 .menutop {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 300px;
   justify-items: stretch;
   grid-gap: 20px;
   padding: 5px 0 0 5px;
@@ -223,7 +232,7 @@ li:hover {
 }
 .fileInput {
   width: 100%;
-  height: 40px;
+  height: 37px;
   padding: 6px 20px !important;
   margin: 8px 0;
   display: inline-block;
@@ -276,4 +285,35 @@ li:hover {
   right: 0;
   text-align: center;
   z-index: 1000;
+}
+.sidebyside {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  justify-items: center;
+  grid-gap: 40px;
+  width: 100%;
+}
+.blankpdf {
+  height: 550px;
+  width: 405px;
+  border: solid 1px black;
+}
+.downloadvisible {
+  visibility: visible;
+}
+.downloadhidden {
+  visibility: hidden;
+}
+.downloadshow {
+  display: block;
+}
+.downloadhide {
+  display: none;
+}
+.confirmBtn {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: end;
+  grid-gap: 2px;
+  width: "100%";
 }

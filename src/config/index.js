@@ -1,13 +1,11 @@
 const globalVar = {
   scale: 0,
   scaleorigin: 0,
-  showSpin: false,
   imgname: null,
   originimg: null,
   thumbimg: null,
   thumborigin: null,
   thumbpdf: null,
-  originurl: null,
   position: null,
   keepposition: null,
   draggable: true,
@@ -21,10 +19,6 @@ const globalVar = {
   triggerpdf: false,
   triggerreset: false,
   contextinfo: null,
-  transforminit: null,
-  openPopup: false,
-  spinshow: false,
-  togglers: {},
 };
 
 export { globalVar };
