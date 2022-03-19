@@ -69,6 +69,10 @@ const ImageForm = () => {
         dispatch(globalVariable({ sidetype: "nude" }));
         dispatch(globalVariable({ imgname: e.target.files[0].name }));
         dispatch(globalVariable({ originimg: dt }));
+
+        dispatch(
+          globalVariable({ imgsize: { x: this.width, y: this.height } })
+        );
         $(".menutop div").css({ visibility: "visible" });
         e.target.value = "";
         setTimeout(() => {
@@ -199,19 +203,22 @@ const ImageForm = () => {
         >
           <Popover
             content={
-              <Space>
+              <div className="confirmBtn">
+                <div></div>
                 <Button
                   size="small"
                   style={{ backgroundColor: "#00A041", color: "white" }}
-                  onClick={() => confirm("stable")}
+                  onClick={() => {
+                    confirm("stable");
+                    setVisible1(false);
+                  }}
                 >
                   확인
                 </Button>
-                &npsp;
                 <Button size="small" onClick={() => setVisible1(false)}>
                   취소
                 </Button>
-              </Space>
+              </div>
             }
             title="안정형 판독을 진행하시겠습니까?"
             placement="topLeft"
@@ -227,19 +234,20 @@ const ImageForm = () => {
           <Popover
             content={
               <div className="confirmBtn">
-                <div>
-                  <Button
-                    size="small"
-                    style={{ backgroundColor: "#00A041", color: "white" }}
-                    onClick={() => confirm("unstable")}
-                  >
-                    확인
-                  </Button>
-                  &npsp;
-                  <Button size="small" onClick={() => setVisible2(false)}>
-                    취소
-                  </Button>
-                </div>
+                <div></div>
+                <Button
+                  size="small"
+                  style={{ backgroundColor: "#00A041", color: "white" }}
+                  onClick={() => {
+                    confirm("unstable");
+                    setVisible2(false);
+                  }}
+                >
+                  확인
+                </Button>
+                <Button size="small" onClick={() => setVisible2(false)}>
+                  취소
+                </Button>
               </div>
             }
             title="불안정형 판독을 진행하시겠습니까?"

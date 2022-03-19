@@ -121,14 +121,14 @@ const styles = StyleSheet.create({
   imgContainer: {
     paddingTop: 20,
     objectFit: "fill",
+    border: "solid 1px red",
   },
   image: {
     maxWidth: 740,
-
+    maxHeight: 570,
     objectFit: "cover",
     marginLeft: "auto",
     marginRight: "auto",
-    border: "solid 1px white",
   },
   // image: {
   //   position: "absolute",

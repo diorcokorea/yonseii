@@ -5,7 +5,6 @@
   padding-left: 35px;
   margin: 0 20px 12px 10px;
 
-  cursor: pointer;
   font-size: 18px;
 }
 
@@ -16,6 +15,7 @@
   cursor: pointer;
   height: 0;
   width: 0;
+  pointer-events: none;
 }
 .text {
   position: absolute;
@@ -66,4 +66,22 @@
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
+}
+
+/* bootstrap */
+/* .custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: green !important;
+} */
+
+.checkbox-lg .custom-control-label::before,
+.checkbox-lg .custom-control-label::after {
+  top: 0.8rem;
+  width: 1.55rem;
+  height: 1.55rem;
+  background-color: #00a041 !important;
+}
+
+.checkbox-lg .custom-control-label {
+  padding-top: 13px;
+  padding-left: 6px;
 }

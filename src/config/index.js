@@ -19,6 +19,8 @@ const globalVar = {
   triggerpdf: false,
   triggerreset: false,
   contextinfo: null,
+  contextstatus: null,
+  imgsize: null,
 };
 
 export { globalVar };

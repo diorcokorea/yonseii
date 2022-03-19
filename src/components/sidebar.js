@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Typography, Space } from "antd";
 import { globalVariable } from "../actions";
 import noimage from "../images/Side.png";
+import $ from "jquery";
 
 const { Title } = Typography;
 
@@ -11,6 +12,7 @@ const Sidebar = () => {
   const thumb = useSelector((state) => state.global.thumbimg);
   const originimg = useSelector((state) => state.global.originimg);
   const thumborigin = useSelector((state) => state.global.thumborigin);
+  const thumbpdf = useSelector((state) => state.global.thumbpdf);
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
   const [imgthumb, setImgthumb] = useState(noimage);
@@ -19,6 +21,11 @@ const Sidebar = () => {
   const [showSide, setShowside] = useState(false);
   const [showResult, setShowResult] = useState(false);
 
+  useEffect(() => {
+    const fitHeight = $(".sidebar").css({ height: window.innerHeight - 110 });
+    window.addEventListener("resize", fitHeight);
+    return () => window.removeEventListener("resize", fitHeight);
+  }, []);
   useEffect(() => {
     if (!thumb) {
       setImgthumb(noimage);
@@ -57,13 +64,14 @@ const Sidebar = () => {
             <div
               className={selected1 ? "sideclicked" : "sidemenu"}
               onClick={() => {
-                dispatch(globalVariable({ drawtype: [false, false, false] }));
                 dispatch(globalVariable({ sidetype: "nude" }));
                 setSelected1(true);
                 setSelected2(false);
               }}
             >
-              <img src={thumborigin} description="" alt="" />
+              <div className="imgcontainer">
+                <img src={originimg} description="" alt="" />
+              </div>
             </div>
           </div>
           {showResult && (
@@ -83,13 +91,14 @@ const Sidebar = () => {
               <div
                 className={selected2 ? "sideclicked" : "sidemenu1"}
                 onClick={() => {
-                  dispatch(globalVariable({ drawtype: [true, true, true] }));
                   dispatch(globalVariable({ sidetype: "added" }));
                   setSelected1(false);
                   setSelected2(true);
                 }}
               >
-                <img crossOrigin="anonymous" src={imgthumb} alt="" />
+                <div className="imgcontainer">
+                  <img crossOrigin="anonymous" src={imgthumb} alt="" />
+                </div>
               </div>
             </div>
           )}

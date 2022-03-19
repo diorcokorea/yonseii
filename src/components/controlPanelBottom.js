@@ -1,28 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import {
-  Space,
-  Button,
-  Slider,
-  notification,
-  Popconfirm,
-  DatePicker,
-} from "antd";
+import { Space, Button, Slider, notification, Popover, DatePicker } from "antd";
 import "antd/dist/antd.css";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { AiOutlineDelete } from "react-icons/ai";
 import { BsBoundingBoxCircles } from "react-icons/bs";
 import { FiRotateCw } from "react-icons/fi";
 import PdfRender from "./pdfdoc";
-import { PDFDownloadLink, PDFViewer, BlobProvider } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import _ from "lodash";
 import $ from "jquery";
 import "../css/checkbox.css";
 import "../css/form.css";
 import "../css/modalFullscreen.css";
 import bgscale from "../images/bar-bg.png";
-import Newwindow from "./newwindow";
+import bgscale1 from "../images/ruler.jpg";
 import { MdDownload } from "react-icons/md";
 
 import moment from "moment";
@@ -51,18 +44,20 @@ const ImageForm = () => {
   const [pdfUnstable, setPdfUnstable] = useState(false);
   const [plustype, setPlustype] = useState(false);
   const [pdfinput, setPdfinput] = useState({});
-  const [btndisabled, setBtndisabled] = useState(true);
+  const [pdfimsi, setPdfimsi] = useState({});
   const [btndisabled1, setBtndisabled1] = useState(true);
-  const [fullScreen, setFullScreen] = useState(true);
+  const [btndisabled2, setBtndisabled2] = useState(true);
+  const [visible1, setVisible1] = useState(false);
+  const [visible2, setVisible2] = useState(false);
 
   useEffect(() => {
     if (_.isEqual(position, keepposition)) {
-      setBtndisabled(true);
       setBtndisabled1(true);
+      setBtndisabled2(true);
     } else {
       //setBtndisabled(false);
       const active = localStorage.getItem("contextactive");
-      if (!active) setBtndisabled1(false);
+      if (!active) setBtndisabled2(false);
     }
   }, [position]);
 
@@ -87,17 +82,18 @@ const ImageForm = () => {
     }
   }, [drawpdf]);
   useEffect(() => {
-    if (fillcolor) setBtndisabled(false);
-    else setBtndisabled(true);
+    if (fillcolor) setBtndisabled1(false);
+    else setBtndisabled1(true);
   }, [fillcolor]);
 
-  useEffect(() => {
-    let newpdf = {
-      ...pdfinput,
-      readtype,
-    };
-    setPdfinput(newpdf);
-  }, [readtype]);
+  // useEffect(() => {
+  //   let newpdf = {
+  //     ...pdfinput,
+  //     readtype,
+  //   };
+  //   setPdfinput(newpdf);
+  //   setPdfimsi(newpdf);
+  // }, [readtype]);
   function checkOnchange(type) {
     switch (type) {
       case "stable":
@@ -117,7 +113,7 @@ const ImageForm = () => {
     }
   }
   function pdfOnchange(type) {
-    let newpdf = { ...pdfinput };
+    let newpdf = { ...pdfimsi };
     switch (type) {
       case "stable":
         setPdfStable(!pdfStable);
@@ -137,7 +133,7 @@ const ImageForm = () => {
         break;
     }
     dispatch(globalVariable({ triggerpdf: true }));
-    setPdfinput(newpdf);
+    setPdfimsi(newpdf);
   }
 
   const removeAll = () => {
@@ -155,9 +151,10 @@ const ImageForm = () => {
     dispatch(globalVariable({ position: position1 }));
     localStorage.removeItem("selected");
     localStorage.removeItem("shape");
-    setBtndisabled(true);
+    setBtndisabled1(true);
 
     dispatch(globalVariable({ fillcolor: null }));
+    dispatch(globalVariable({ contextstatus: false }));
   };
 
   const sliderChange = (value) => {
@@ -168,8 +165,10 @@ const ImageForm = () => {
   };
 
   const openNotification = () => {
+    const key = "updatable";
     notification.open({
       message: "염색체 개수 초과",
+      key,
       description:
         "염색체가 이미 46개 등록 되어 있습니다. 추가 등록을 원하시는 경우 선택/삭제 후 등록 부탁드립니다.",
     });
@@ -180,21 +179,23 @@ const ImageForm = () => {
     else {
       setPlustype(!plustype);
       dispatch(globalVariable({ draggable: plustype }));
+      dispatch(globalVariable({ fillcolor: null }));
     }
   };
 
-  const handleModalInput = () => {
+  const checkInput = () => {
     //check  이름, 날짜
+    const newpdfinput = { ...pdfinput, ...pdfimsi };
     let msg = "";
-    if (pdfinput.name === "" || pdfinput.date === "") {
-      if (pdfinput.name === "" && pdfinput.date === "") {
-        msg += "이름과 날짜가 누락되었습니다. ";
+    if (newpdfinput.name === "" || newpdfinput.date === "") {
+      if (newpdfinput.name === "" && newpdfinput.date === "") {
+        msg += "이름과 날짜를 입력해주세요. ";
       } else {
-        if (pdfinput.name === "") msg = "이름이 누락되었습니다. ";
-        if (pdfinput.date === "") msg = "날짜가 누락되었습니다.";
+        if (newpdfinput.name === "") msg = "이름을 입력해주세요. ";
+        if (newpdfinput.date === "") msg = "날짜를 입력해주세요.";
       }
-      alert(msg);
     }
+    return msg;
   };
 
   const handleReportSet = () => {
@@ -206,17 +207,20 @@ const ImageForm = () => {
         day: "2-digit",
       })
       .replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2");
-
-    setPdfinput({
+    let inputval = {
       ...pdfinput,
-      name: imgname && imgname.split(".")[0],
-      date: datestring,
       readtype,
       normal: counting.normal,
       abnormal: counting.abnormal,
-    });
+    };
+    if (!inputval.name)
+      inputval = { ...inputval, name: imgname && imgname.split(".")[0] };
+    if (!inputval.date) inputval = { ...inputval, date: datestring };
+    setPdfinput(inputval);
+    setPdfimsi(inputval);
   };
-  const viewer = (
+
+  const modalReportBody = (
     <>
       <PDFViewer
         showToolbar={false}
@@ -228,22 +232,17 @@ const ImageForm = () => {
       </PDFViewer>
     </>
   );
-  const pdfForm = (
+  const modalSettingBody = (
     <div>
       <form>
         <label className="label">이름</label>
         <input
           className="input"
           placeholder="이름을 입력해주세요."
-          value={pdfinput?.name}
-          onFocus={(e) => {
-            e.target.value = "";
-            let newpdf = { ...pdfinput, name: "" };
-            setPdfinput(newpdf);
-          }}
+          value={pdfimsi?.name}
           onChange={(e) => {
-            let newpdf = { ...pdfinput, name: e.target.value };
-            setPdfinput(newpdf);
+            let newpdf = { ...pdfimsi, name: e.target.value };
+            setPdfimsi(newpdf);
           }}
         />
         <div className="label1">
@@ -275,13 +274,14 @@ const ImageForm = () => {
         </label>
         <DatePicker
           placeholder="날짜를 선택하세요."
+          allowClear={false}
           defaultValue={moment(new Date(), "YYYY-MM-DD")}
           onChange={(date, dateString) => {
-            let newpdf = { ...pdfinput, date: dateString };
-            setPdfinput(newpdf);
+            let newpdf = { ...pdfimsi, date: dateString };
+            setPdfimsi(newpdf);
           }}
           style={{
-            width: "300px",
+            width: "100%",
             height: 50,
             fontSize: 16,
           }}
@@ -289,8 +289,8 @@ const ImageForm = () => {
       </form>
     </div>
   );
-  const content = <PdfRender img={thumbpdf} {...pdfinput} />;
-  const link1 = (
+
+  const modalReportBtn = (
     <PDFDownloadLink
       document={<PdfRender img={thumbpdf} {...pdfinput} />}
       fileName={`${pdfinput.name}.pdf`}
@@ -305,94 +305,30 @@ const ImageForm = () => {
       }}
     </PDFDownloadLink>
   );
-  const downBtn = link1;
-  const previewBtn = (
+
+  const modalSettingBtn = (
     <>
-      {" "}
-      <BlobProvider filename="name" document={content}>
-        {({ url, blob, loading }) => {
-          console.log("d", url, blob, loading);
-
-          return (
-            <a href={url} target="_blank" title="name">
-              View as PDF
-            </a>
-          );
-        }}
-      </BlobProvider>
-      <button
-        onClick={() => {
-          $("#closeSetting").click();
-        }}
-      >
-        openpdf
-      </button>
-      <button
-        type="button"
-        class="btn rounded-pill"
-        data-toggle="modal"
-        data-target="#pdfreport"
-        onClick={() => {
-          $("#closeSetting").click();
-        }}
-      >
-        리포트 보기
-      </button>
-      <Newwindow>
-        <PDFViewer showToolbar={true} width="100%" height="100%">
-          {content}
-        </PDFViewer>
-        {link1}
-
-        {/* <div style={{ textAlign: "center", margin: 20 }}>
-          <PDFDownloadLink
-            document={<PdfRender img={thumbpdf} {...pdfinput} />}
-            fileName={`${pdfinput.name}.pdf`}
-          >
-            {({ blob, url, loading, error }) => {
-              return (
-                <Button type="success">{loading ? "생성중..." : "확인"}</Button>
-              );
-            }}
-          </PDFDownloadLink> 
-        </div>*/}
-      </Newwindow>
-      {/* <div
-        id="temp"
-        className={
-          pdfinput.name === "" || pdfinput.date === ""
-            ? "downloadhidden"
-            : "downloadvisible"
-        }
-      >
-        <PDFDownloadLink
-          document={<PdfRender img={thumbpdf} {...pdfinput} />}
-          fileName={`${pdfinput.name}.pdf`}
-        >
-          {({ blob, url, loading, error }) => {
-            return (
-              <button
-                type="button"
-                class="btn btn-success"
-                onClick={handleModalInput}
-              >
-                {loading ? "생성중..." : "확인"}
-              </button>
-            );
+      {!pdfimsi.name ? (
+        <Popover content={checkInput()} trigger="click">
+          <button type="button" className="btn rounded-pill">
+            확인
+          </button>
+        </Popover>
+      ) : (
+        <button
+          type="button"
+          class="btn rounded-pill"
+          data-toggle="modal"
+          data-target="#pdfreport"
+          onClick={() => {
+            let newpdf = { ...pdfinput, ...pdfimsi };
+            setPdfinput(newpdf);
+            $("#closeSetting").click();
           }}
-        </PDFDownloadLink>
-      </div> */}
-      {/* <button
-        type="button"
-        className={
-          pdfinput.name === "" || pdfinput.date === ""
-            ? "downloadshow btn btn-success"
-            : "downloadhide"
-        }
-        onClick={handleModalInput}
-      >
-        확인
-      </button> */}
+        >
+          확인
+        </button>
+      )}
       <button
         type="button"
         id="closeSetting"
@@ -426,7 +362,7 @@ const ImageForm = () => {
               {pdfinput.name}
             </h6>
             <div style={{ position: "absolute", top: 23, right: 60 }}>
-              {downBtn}
+              {modalReportBtn}
             </div>
             <button
               type="button"
@@ -439,9 +375,8 @@ const ImageForm = () => {
             </button>
           </div>
           <div class="modal-body">
-            <div>{viewer}</div>
+            <div>{modalReportBody}</div>
           </div>
-          {/* <div class="modal-footer">{downBtn}</div> */}
         </div>
       </div>
     </div>
@@ -455,20 +390,12 @@ const ImageForm = () => {
       aria-labelledby="exampleModalCenterTitle"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLongTitle">
               리포트 보기
             </h5>
-            {/* <button
-              type="button"
-              style={{ position: "absolute", top: 20, right: 50 }}
-              aria-label="full"
-              onClick={() => setFullScreen(!fullScreen)}
-            >
-              full
-            </button> */}
             <button
               type="button"
               class="close"
@@ -478,12 +405,8 @@ const ImageForm = () => {
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">
-            <div className="sidebyside">
-              <div>{pdfForm}</div>
-            </div>
-          </div>
-          <div class="modal-footer">{previewBtn}</div>
+          <div class="modal-body">{modalSettingBody}</div>
+          <div class="modal-footer">{modalSettingBtn}</div>
         </div>
       </div>
     </div>
@@ -504,7 +427,7 @@ const ImageForm = () => {
               value={sidetype === "nude" ? scaleorigin : scale}
             />
 
-            <img src={bgscale} alt="" className="img_responsive" />
+            <img src={bgscale1} alt="" className="img_responsive" />
           </div>
         </Space>
 
@@ -547,45 +470,93 @@ const ImageForm = () => {
             <Button
               size="large"
               title="마우스드래그로 Box를 추가할수 있습니다."
-              type={plustype ? "primary" : ""}
               onClick={drawBox}
               icon={<BsBoundingBoxCircles />}
               style={{
-                backgroundColor: plustype ? "#2d4232" : "#00a041",
-                color: "white",
+                backgroundColor: plustype ? "#00a041" : "#ffffff",
+                color: !plustype ? "#00a041" : "#ffffff",
               }}
             />
-            <Button
-              icon={<AiOutlineDelete />}
-              // type={minustype}
-              size="large"
-              disabled={btndisabled}
-              style={
-                btndisabled
-                  ? {}
-                  : { backgroundColor: "#00a041", color: "white" }
+
+            <Popover
+              content={
+                <div className="confirmBtn">
+                  <div></div>
+                  <Button
+                    size="small"
+                    style={{ backgroundColor: "#00A041", color: "#ffffff" }}
+                    onClick={() => {
+                      deleteSelected();
+                      setVisible1(false);
+                    }}
+                  >
+                    확인
+                  </Button>
+                  <Button size="small" onClick={() => setVisible1(false)}>
+                    취소
+                  </Button>
+                </div>
               }
-              onClick={deleteSelected}
-            />
-            <Popconfirm
-              title="박스값이 초기화됩니다. 계속하시겠습니까?"
-              onConfirm={removeAll}
-              okText="확인"
-              cancelText="취소"
-              disabled={btndisabled1}
+              title="삭제하시겠습니까?"
+              placement="top"
+              trigger="click"
+              visible={visible1}
+              onVisibleChange={() => {
+                !btndisabled1 && setVisible1(!visible1);
+              }}
             >
               <Button
-                icon={<FiRotateCw />}
-                disabled={btndisabled1}
-                title="선택박스를 최초값으로 초기화합니다."
+                icon={<AiOutlineDelete />}
+                // type={minustype}
                 size="large"
+                disabled={btndisabled1}
                 style={
                   btndisabled1
                     ? {}
-                    : { backgroundColor: "#00a041", color: "white" }
+                    : { backgroundColor: "#ffffff", color: "#00A041" }
+                }
+                // onClick={deleteSelected}
+              />
+            </Popover>
+
+            <Popover
+              content={
+                <div className="confirmBtn">
+                  <div></div>
+                  <Button
+                    size="small"
+                    style={{ backgroundColor: "#00A041", color: "white" }}
+                    onClick={() => {
+                      removeAll();
+                      setVisible2(false);
+                    }}
+                  >
+                    확인
+                  </Button>
+                  <Button size="small" onClick={() => setVisible2(false)}>
+                    취소
+                  </Button>
+                </div>
+              }
+              title="최초 판독 결과 초기화됩니다. 계속하시겠습니까?"
+              placement="top"
+              trigger="click"
+              visible={visible2}
+              onVisibleChange={() => {
+                !btndisabled2 && setVisible2(!visible2);
+              }}
+            >
+              <Button
+                icon={<FiRotateCw />}
+                disabled={btndisabled2}
+                size="large"
+                style={
+                  btndisabled2
+                    ? {}
+                    : { backgroundColor: "#ffffff", color: "#00A041" }
                 }
               />
-            </Popconfirm>
+            </Popover>
           </Space>
         </div>
 
