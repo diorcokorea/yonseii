@@ -14,7 +14,7 @@ import $ from "jquery";
 import "../css/checkbox.css";
 import "../css/form.css";
 import "../css/modalFullscreen.css";
-import bgscale from "../images/bar-bg.png";
+import bgscale from "../images/zoom bar-bg.png";
 import bgscale1 from "../images/ruler.jpg";
 import { MdDownload } from "react-icons/md";
 
@@ -133,6 +133,7 @@ const ImageForm = () => {
         break;
     }
     dispatch(globalVariable({ triggerpdf: true }));
+    console.log(newpdf);
     setPdfimsi(newpdf);
   }
 
@@ -185,7 +186,8 @@ const ImageForm = () => {
 
   const checkInput = () => {
     //check  이름, 날짜
-    const newpdfinput = { ...pdfinput, ...pdfimsi };
+    let newpdfinput = { ...pdfinput, ...pdfimsi };
+
     let msg = "";
     if (newpdfinput.name === "" || newpdfinput.date === "") {
       if (newpdfinput.name === "" && newpdfinput.date === "") {
@@ -225,7 +227,7 @@ const ImageForm = () => {
       <PDFViewer
         showToolbar={false}
         width="100%"
-        height="1150px"
+        height="660px"
         style={{ border: "none" }}
       >
         <PdfRender img={thumbpdf} {...pdfinput} />
@@ -253,7 +255,7 @@ const ImageForm = () => {
                 onChange={() => pdfOnchange("stable")}
                 checked={pdfStable}
               />
-              <div className="text">정상</div>
+              <div className="textsmall">정상</div>
               <span className="checkmark"></span>
             </label>
             &nbsp;&nbsp;&nbsp;
@@ -322,6 +324,8 @@ const ImageForm = () => {
           data-target="#pdfreport"
           onClick={() => {
             let newpdf = { ...pdfinput, ...pdfimsi };
+            if (!pdfimsi.normal) delete newpdf.normal;
+            if (!pdfimsi.abnormal) delete newpdf.abnormal;
             setPdfinput(newpdf);
             $("#closeSetting").click();
           }}
@@ -342,14 +346,14 @@ const ImageForm = () => {
   );
   const modalReport = (
     <div
-      className="modal fade modal-fullscreen"
+      className="modal fade"
       id="pdfreport"
       tabindex="-1"
       role="dialog"
       aria-labelledby="exampleModalCenterTitle1"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header modal-black">
             <h6
@@ -361,7 +365,7 @@ const ImageForm = () => {
 
               {pdfinput.name}
             </h6>
-            <div style={{ position: "absolute", top: 23, right: 60 }}>
+            <div style={{ position: "absolute", top: 22, right: 60 }}>
               {modalReportBtn}
             </div>
             <button
@@ -388,6 +392,7 @@ const ImageForm = () => {
       tabindex="-1"
       role="dialog"
       aria-labelledby="exampleModalCenterTitle"
+      style={{ width: 400, left: "40%" }}
       aria-hidden="true"
     >
       <div class="modal-dialog modal-dialog-centered" role="document">
@@ -427,7 +432,7 @@ const ImageForm = () => {
               value={sidetype === "nude" ? scaleorigin : scale}
             />
 
-            <img src={bgscale1} alt="" className="img_responsive" />
+            <img src={bgscale} alt="" className="img_responsive" />
           </div>
         </Space>
 
@@ -466,7 +471,7 @@ const ImageForm = () => {
           />
         </div>
         <div className={sidetype === "nude" && "hideitem"}>
-          <Space style={{ width: "100%" }}>
+          <Space style={{ width: "100%", marginTop: 7 }}>
             <Button
               size="large"
               title="마우스드래그로 Box를 추가할수 있습니다."
@@ -560,7 +565,10 @@ const ImageForm = () => {
           </Space>
         </div>
 
-        <div className={sidetype === "nude" && "hideitem"}>
+        <div
+          className={sidetype === "nude" && "hideitem"}
+          style={{ marginTop: 7 }}
+        >
           <button
             type="button"
             class="btn rounded-pill"

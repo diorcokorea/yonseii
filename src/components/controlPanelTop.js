@@ -7,6 +7,7 @@ import "../css/spin.css";
 import $ from "jquery";
 import _ from "lodash";
 import addbtn from "../images/Add_btn.png";
+import progressbar from "../images/progressbar.gif";
 
 export const countGene = (data) => {
   //let result_json = JSON.parse(input);
@@ -25,7 +26,8 @@ const ImageForm = () => {
   const originimg = useSelector((state) => state.global.originimg);
   const imgname = useSelector((state) => state.global.imgname);
 
-  const [showspin, setShowspin] = useState(false);
+  const [showspin1, setShowspin1] = useState(false);
+  const [showspin2, setShowspin2] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
 
@@ -56,7 +58,7 @@ const ImageForm = () => {
   };
   function fileUpload(e) {
     //$(".menutop div").css({ visibility: "hidden" });
-    setShowspin(true);
+    setShowspin1(true);
     let URL = window.webkitURL || window.URL;
     if (e.target.files.length === 0) return;
     let url = URL.createObjectURL(e.target.files[0]);
@@ -76,7 +78,7 @@ const ImageForm = () => {
         $(".menutop div").css({ visibility: "visible" });
         e.target.value = "";
         setTimeout(() => {
-          setShowspin(false);
+          setShowspin1(false);
           $(".ant-popover-buttons").map((k, i) => {
             const fst = $(k).find("button:first");
             $(k).find("button:first").remove();
@@ -89,7 +91,7 @@ const ImageForm = () => {
     };
   }
   function confirm(type) {
-    setShowspin(true);
+    setShowspin2(true);
     setTimeout(() => {
       dispatch(globalVariable({ fillcolor: null }));
       dispatch(globalVariable({ scaleorigin: 0 }));
@@ -156,12 +158,12 @@ const ImageForm = () => {
           dispatch(globalVariable({ readtype: type }));
           dispatch(globalVariable({ sidetype: "added" }));
           dispatch(globalVariable({ triggerthumb: true }));
-          setShowspin(false);
+          setShowspin2(false);
         }
       },
       error: function (e) {
         let message = "error : " + e;
-        setShowspin(false);
+        setShowspin2(false);
         console.log("error", e);
       },
     });
@@ -261,7 +263,12 @@ const ImageForm = () => {
             </Button>
           </Popover>
         </div>
-        {showspin && <div id="cover-spin" />}
+        {showspin1 && <div id="cover-spin" />}
+        {showspin2 && (
+          <div className="progress">
+            <img width={300} src={progressbar} alt="" />
+          </div>
+        )}
       </div>
     </>
   );

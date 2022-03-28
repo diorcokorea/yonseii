@@ -71,6 +71,7 @@ const DrawAnnotations = (props) => {
   const [imgready, setImgready] = useState(false);
   const [contexttype, setContexttype] = useState();
   const [anchorPoint, setAnchorPoint] = useState();
+  const [dragPoint, setDragPoint] = useState();
   const [initScale, setInitScale] = useState();
   const [savedTransform, setSavedTransform] = useState();
 
@@ -100,24 +101,26 @@ const DrawAnnotations = (props) => {
     }
   }, [draggable]);
 
-  // useEffect(() => {
-  //   const checkSize = () => {
-  //     const info = {
-  //       width: window.innerWidth - 270,
-  //       height: window.innerHeight - 110,
-  //     };
-  //     if (sidetype === "nude") setSize2(info);
-  //     else setSize1(info);
-  //     refreshImage(sidetype, false);
-  //     console.log(scaleorigin);
-  //     // setTimeout(() => {
-  //     //   resizeStage(imageRef.current, scaleorigin);
-  //     // }, 1000);
-  //   };
+  useEffect(() => {
+    let doit;
+    const checkSize = () => {
+      const info = {
+        width: window.innerWidth - 270,
+        height: window.innerHeight - 110,
+      };
+      // if (sidetype === "nude") setSize2(info);
+      // else setSize1(info);
+      clearTimeout(doit);
+      doit = setTimeout(function () {
+        imageRef.current.batchDraw();
+      }, 500);
 
-  //   window.addEventListener("resize", checkSize);
-  //   return () => window.removeEventListener("resize", checkSize);
-  // }, [sidetype]);
+      // refreshImage(sidetype, false);
+    };
+
+    window.addEventListener("resize", checkSize);
+    return () => window.removeEventListener("resize", checkSize);
+  }, [sidetype]);
 
   var SCENE_BASE_WIDTH = 1280;
   const scale1 = size1.width / SCENE_BASE_WIDTH;
@@ -634,102 +637,118 @@ const DrawAnnotations = (props) => {
     transform.m[5] = 0;
     ref.setAttrs(transform.decompose());
   };
-
+  const handleDragStart = (e) => {
+    setShow(false);
+    setDragPoint(e.target.getStage().getPointerPosition());
+  };
+  const handleDragEnd = (e) => {
+    setShow(true);
+    const endPoint = e.target.getStage().getPointerPosition();
+    const move = { x: dragPoint.x - endPoint.x, y: dragPoint.y - endPoint.y };
+    setAnchorPoint({ x: anchorPoint.x - move.x, y: anchorPoint.y - move.y });
+  };
   return (
-    <div id="stage-parent">
-      <div id="srccontainer">
-        <Stage
-          onWheel={handleWheel}
-          width={window.innerWidth - 275}
-          height={window.innerHeight - 110}
-          scaleX={scale2}
-          scaleY={scale2}
-          draggable={draggable}
-          ref={imageRef}
-        >
-          <Layer ref={layerRef}>
-            <LionImage originimg={originimg} imgsize={imgsize} />
-          </Layer>
-        </Stage>
+    <>
+      <div id="noimg">
+        <img src={noimg} width={300} alt="noimg" />
       </div>
-      <div id="resultcontainer" className={!draggable && "cursoractive"}>
-        <Stage
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-          onWheel={handleWheel}
-          draggable={draggable}
-          ref={stageRef}
-          width={window.innerWidth - 275}
-          height={window.innerHeight - 110}
-          scaleX={scale1}
-          scaleY={scale1}
-        >
-          <Layer>
-            <LionImage originimg={originimg} imgsize={imgsize} />
-            {annotationsToDraw &&
-              annotationsToDraw.map((value, i) => {
-                return (
-                  <>
-                    <Rect
-                      x={value.x}
-                      y={value.y}
-                      id={value.id}
-                      width={value.width}
-                      height={value.height}
-                      //fill={fillcolor === value.id ? "yellow" : "transparent"}
-                      stroke={value.stroke ? value.stroke : "blue"}
-                      strokeWidth={fillcolor === value.id ? 5 : 1}
-                      name="rect"
-                      onContextMenu={handleContextMenu}
-                      // onClick={selectRect}
-                      centeredScaling={true}
-                    />
-                  </>
-                );
-              })}
-          </Layer>
-        </Stage>
+      <div id="stage-parent">
+        <div id="srccontainer">
+          <Stage
+            onWheel={handleWheel}
+            width={window.innerWidth - 275}
+            height={window.innerHeight - 110}
+            scaleX={scale2}
+            scaleY={scale2}
+            draggable={draggable}
+            ref={imageRef}
+          >
+            <Layer ref={layerRef}>
+              <LionImage originimg={originimg} imgsize={imgsize} />
+            </Layer>
+          </Stage>
+        </div>
+        <div id="resultcontainer" className={!draggable && "cursoractive"}>
+          <Stage
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onWheel={handleWheel}
+            draggable={draggable}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            ref={stageRef}
+            width={window.innerWidth - 275}
+            height={window.innerHeight - 130}
+            scaleX={scale1}
+            scaleY={scale1}
+          >
+            <Layer>
+              <LionImage originimg={originimg} imgsize={imgsize} />
+              {annotationsToDraw &&
+                annotationsToDraw.map((value, i) => {
+                  return (
+                    <>
+                      <Rect
+                        x={value.x}
+                        y={value.y}
+                        id={value.id}
+                        width={value.width}
+                        height={value.height}
+                        //fill={fillcolor === value.id ? "yellow" : "transparent"}
+                        stroke={value.stroke ? value.stroke : "blue"}
+                        strokeWidth={fillcolor === value.id ? 5 : 1}
+                        name="rect"
+                        onContextMenu={handleContextMenu}
+                        // onClick={selectRect}
+                        centeredScaling={true}
+                      />
+                    </>
+                  );
+                })}
+            </Layer>
+          </Stage>
+        </div>
+        <div id="pdfcontainer" style={{ display: "none" }}>
+          <Stage
+            ref={pdfRef}
+            width={size1.width}
+            height={size1.height + 250}
+            scaleX={scale1}
+            scaleY={scale1}
+          >
+            <Layer>
+              <LionImage originimg={originimg} imgsize={imgsize} />
+              {pdfToDraw &&
+                pdfToDraw.map((value, i) => {
+                  return (
+                    <>
+                      <Rect
+                        x={value.x}
+                        y={value.y}
+                        id={value.id}
+                        width={value.width}
+                        height={value.height}
+                        stroke={value.stroke ? value.stroke : "blue"}
+                        strokeWidth={fillcolor === value.id ? 5 : 1}
+                        name="rect"
+                        centeredScaling={true}
+                      />
+                    </>
+                  );
+                })}
+            </Layer>
+          </Stage>
+        </div>
+        {show && (
+          <ContextMenu
+            position={anchorPoint}
+            contextClick={contextClick}
+            type={contexttype}
+          />
+        )}
       </div>
-      <div id="pdfcontainer" style={{ display: "none" }}>
-        <Stage
-          ref={pdfRef}
-          width={size1.width}
-          height={size1.height + 250}
-          scaleX={scale1}
-          scaleY={scale1}
-        >
-          <Layer>
-            <LionImage originimg={originimg} imgsize={imgsize} />
-            {pdfToDraw &&
-              pdfToDraw.map((value, i) => {
-                return (
-                  <>
-                    <Rect
-                      x={value.x}
-                      y={value.y}
-                      id={value.id}
-                      width={value.width}
-                      height={value.height}
-                      stroke={value.stroke ? value.stroke : "blue"}
-                      strokeWidth={fillcolor === value.id ? 5 : 1}
-                      name="rect"
-                      centeredScaling={true}
-                    />
-                  </>
-                );
-              })}
-          </Layer>
-        </Stage>
-      </div>
-      {show && (
-        <ContextMenu
-          position={anchorPoint}
-          contextClick={contextClick}
-          type={contexttype}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

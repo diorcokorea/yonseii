@@ -11,6 +11,7 @@ const globalVar = {
   draggable: true,
   readtype: "",
   sidetype: "noimg", //nude, added
+  reload: null, //nude, added
   fillcolor: null,
   drawtype: [true, true, true],
   drawpdf: [true, true, true],

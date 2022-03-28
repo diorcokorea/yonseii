@@ -60,7 +60,7 @@ body {
   border-bottom: solid 1px #d9d9d9;
 }
 .resultnumber {
-  margin: 5px 0 0 20px;
+  margin: 17px 0 0 20px;
   display: grid;
   grid-template-columns: 80px 1fr 80px 1fr;
   justify-items: stretch;
@@ -68,8 +68,8 @@ body {
 }
 .img_responsive {
   width: 100%;
-  height: auto;
-  padding: 0 5px;
+  padding: 0 0 5px 3px;
+  margin-top: -10px;
 }
 .hideitem {
   display: none;
@@ -130,18 +130,33 @@ li:hover {
   font-size: 14px;
   background-color: #fff;
   border-radius: 2px;
-  padding: 5px 0 5px 0;
-  width: 150px;
+  display: block;
+  overflow: hidden;
+  margin: 0 0 4em 0;
+
+  padding: 5px 0 5px 5px;
+  width: 100px;
   height: auto;
-  margin: 0;
   /* use absolute positioning  */
   position: absolute;
-  list-style: none;
   box-shadow: 0 0 20px 0 #ccc;
   opacity: 1;
   transition: opacity 0.5s linear;
 }
 
+.contextmenu ul {
+  list-style: none;
+  margin: 0;
+}
+.contextmenu li {
+  border-bottom: 1px solid #fff;
+  padding: 7px;
+  margin-right: 5px;
+}
+.contextmenu li:hover {
+  background-color: #ccc;
+  cursor: pointer;
+}
 .pressed {
   background-color: grey;
 }
@@ -266,7 +281,7 @@ li:hover {
 }
 #stage-parent {
   position: relative;
-  padding-top: 20px;
+  padding-top: 10px;
 }
 
 #noimg {

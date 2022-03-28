@@ -7,13 +7,11 @@ import {
   StyleSheet,
   Image,
   Font,
-  BlobProvider,
 } from "@react-pdf/renderer";
 import logo from "../images/Header.png";
 import malgunfont from "../font/malgun/malgun668.ttf";
 
 const ReactPdf = ({ img, name, readtype, date, normal, abnormal }) => {
-  console.log(normal, abnormal);
   return (
     <Document title={name}>
       <Page style={styles.body}>
@@ -77,26 +75,17 @@ const styles = StyleSheet.create({
     paddingBottom: 65,
     paddingHorizontal: 35,
   },
-
   title: {
-    fontSize: 25,
-    weight: BlobProvider,
-    color: "#00A041",
-    marginTop: 20,
+    fontSize: 24,
+    color: "green",
     fontFamily: "Malgun Gothic",
-    borderBottomColor: "#C1C1C1",
+  },
+  containerInarow: {
+    flexDirection: "row",
+    marginTop: 36,
+    borderBottomColor: "grey",
     borderBottomWidth: 1,
   },
-
-  containerInarow: {
-    backgroundColor: "#E9E9E9",
-    paddingTop: 20,
-    paddingBottom: 20,
-    flexDirection: "row",
-    marginTop: 25,
-    display: "flex",
-  },
-
   name: {
     fontSize: 12,
     textAlign: "center",
@@ -104,8 +93,7 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    marginRight: 30,
-    left: 20,
+    marginRight: 6,
     fontSize: 14,
     textAlign: "justify",
     fontFamily: "Malgun Gothic",
@@ -131,11 +119,10 @@ const styles = StyleSheet.create({
     fontFamily: "Malgun Gothic",
   },
   imgContainer: {
-    paddingTop: 30,
+    paddingTop: 20,
     objectFit: "fill",
     border: "solid 1px red",
   },
-
   image: {
     maxWidth: 740,
     maxHeight: 570,
@@ -174,13 +161,15 @@ const styles = StyleSheet.create({
   },
 
   dateContainer: {
-    backgroundColor: "#E9E9E9",
     flexDirection: "row",
+    position: "absolute",
     fontSize: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
-    bottom: 50,
-    left: 0,
+    bottom: 15,
+    left: 5,
+    right: 5,
+    borderTopColor: "grey",
+    borderTopWidth: 1,
+    paddingTop: 5,
   },
 });
 

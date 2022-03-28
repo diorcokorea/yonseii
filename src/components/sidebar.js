@@ -15,6 +15,7 @@ const Sidebar = () => {
   const thumbpdf = useSelector((state) => state.global.thumbpdf);
   const readtype = useSelector((state) => state.global.readtype);
   const sidetype = useSelector((state) => state.global.sidetype);
+  const reload = useSelector((state) => state.global.reload);
   const [imgthumb, setImgthumb] = useState(noimage);
   const [selected1, setSelected1] = useState(false);
   const [selected2, setSelected2] = useState(false);
@@ -22,10 +23,20 @@ const Sidebar = () => {
   const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
-    const fitHeight = $(".sidebar").css({ height: window.innerHeight - 110 });
+    const fitHeight = () => {
+      $(".sidebar").css({ height: window.innerHeight - 110 });
+    };
     window.addEventListener("resize", fitHeight);
     return () => window.removeEventListener("resize", fitHeight);
   }, []);
+  // useEffect(() => {
+  //   if (reload) {
+  //     let newside = "added";
+  //     if (sidetype === "added") newside = "nude";
+  //     dispatch(globalVariable({ sidetype: newside }));
+  //     dispatch(globalVariable({ reload: null }));
+  //   }
+  // }, [reload]);
   useEffect(() => {
     if (!thumb) {
       setImgthumb(noimage);
@@ -53,6 +64,7 @@ const Sidebar = () => {
         break;
     }
   }, [sidetype]);
+
   return (
     <div className="sidebar">
       {showSide && (

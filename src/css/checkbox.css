@@ -3,7 +3,7 @@
   display: block;
   position: relative;
   padding-left: 35px;
-  margin: 0 20px 12px 10px;
+  margin: 0 0px 12px 10px;
 
   font-size: 18px;
 }
@@ -21,7 +21,13 @@
   position: absolute;
   top: 0;
   left: 10;
-  width: 150px !important;
+  width: 50px !important;
+}
+.textsmall {
+  position: absolute;
+  top: 0;
+  left: 10;
+  width: 30px !important;
 }
 /* Create a custom checkbox */
 .checkmark {
