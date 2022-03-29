@@ -1,0 +1,358 @@
+body {
+  /* margin: 0; */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-y: hidden;
+  background-color: white;
+}
+
+.heading {
+  display: grid;
+  grid-template-columns: 310px 1fr 140px;
+  justify-items: stretch;
+  background-color: #00a041;
+}
+.content {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  justify-items: stretch;
+}
+.button {
+  color: white !important;
+  background-color: #00a041 !important;
+}
+.buttonContainer {
+  text-align: "right" !important;
+  visibility: "hidden";
+  margin-right: 10px;
+}
+.sidebar {
+  padding: 20px 15px;
+  background-color: rgb(244, 245, 247);
+
+  min-height: 600px;
+  width: 270px;
+}
+
+.sidebar:hover {
+  border: "solid 3px yellow";
+  background-color: "grey";
+  width: "120%";
+}
+.menutop {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  justify-items: stretch;
+  grid-gap: 20px;
+  padding: 5px 0 0 5px;
+  border-bottom: solid 1px #d9d9d9;
+}
+.menubottom {
+  display: grid;
+  grid-template-columns: 3fr 2fr 1fr 140px;
+  justify-items: stretch;
+  grid-gap: 20px;
+
+  padding: 10px 5px 0 10px;
+  border-bottom: solid 1px #d9d9d9;
+}
+.resultnumber {
+  margin: 30px 0 0 20px;
+  display: grid;
+  grid-template-columns: 80px 1fr 80px 1fr;
+  justify-items: stretch;
+  grid-gap: 10px;
+}
+.img_responsive {
+  width: 100%;
+  padding: 0 0 20px 3px;
+  margin-top: -10px;
+}
+.hideitem {
+  display: none;
+}
+.checkbox-green {
+  min-width: 50px;
+}
+.checkbox-green .ant-checkbox-checked .ant-checkbox-inner,
+.ant-checkbox-indeterminate .ant-checkbox-inner {
+  background-color: #5ebd74;
+  border-color: #5ebd74;
+  transform: scale(1.5);
+}
+
+.checkbox-green .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.ant-checkbox:hover .ant-checkbox-inner,
+.ant-checkbox-input:focus + .ant-checkbox-inner {
+  border-color: #5ebd74;
+}
+.checkbox-green .ant-checkbox-inner,
+.ant-checkbox:hover .ant-checkbox-input {
+  transform: scale(1.5);
+}
+.ant-checkbox-indeterminate .ant-checkbox-inner::after {
+  background-color: #5ebd74;
+}
+
+.uploadform {
+  text-align: left;
+}
+.geneimg {
+  text-align: left;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+ul,
+li {
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  padding: 10px;
+  list-style-type: none;
+}
+
+li:hover {
+  background-color: gray;
+}
+#srccontainer {
+  display: none;
+}
+.contextmenu {
+  font-size: 14px;
+  background-color: #fff;
+  border-radius: 2px;
+  display: block;
+  overflow: hidden;
+  margin: 0 0 4em 0;
+
+  padding: 5px 0 5px 5px;
+  width: 100px;
+  height: auto;
+  /* use absolute positioning  */
+  position: absolute;
+  box-shadow: 0 0 20px 0 #ccc;
+  opacity: 1;
+  transition: opacity 0.5s linear;
+}
+
+.contextmenu ul {
+  list-style: none;
+  margin: 0;
+}
+.contextmenu li {
+  border-bottom: 1px solid #fff;
+  padding: 7px;
+  margin-right: 5px;
+}
+.contextmenu li:hover {
+  background-color: #ccc;
+  cursor: pointer;
+}
+.pressed {
+  background-color: grey;
+}
+.box {
+  margin: 20px 0 20px 0;
+  overflow: hidden;
+}
+.box .imgcontainer {
+  max-height: 220px;
+  text-align: center;
+  vertical-align: bottom;
+}
+.box img {
+  max-height: 215px;
+  width: 100%;
+  object-fit: cover;
+  border: solid 1px black;
+}
+
+.sidetitle {
+  border-bottom: solid 1px #dfdfdf;
+  margin-bottom: 10px;
+}
+.sidemenu {
+  background-color: white;
+  border: solid 3px white;
+  clear: both;
+}
+.sidemenu1 {
+  background-color: white;
+  border: solid 3px white;
+  clear: both;
+}
+.sidemenu1 .sidemenu:hover {
+  opacity: 0.7;
+}
+.sideclicked {
+  border: solid 3px #00a041;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.65) 0px 3px 3px 0px;
+}
+
+.uploadLabel {
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 7px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  cursor: pointer;
+}
+.uploadimg {
+  display: inline-block;
+  color: white;
+  cursor: pointer !important;
+}
+.upload-btn-wrapper input[type="file"] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.upload-label label {
+  margin-left: 10px;
+  font-size: 18px;
+}
+.upload-label > input[type="text"] {
+  clear: both;
+  background-color: #d9d9d9;
+  border-radius: 20px;
+  display: inline-block;
+  margin: 0 0 0 15px;
+  padding: 0px 0 0 5px;
+  width: 321px;
+}
+.pdf {
+  font-family: sans-serif;
+  text-align: center;
+}
+.title {
+  margin: 10px;
+  font-size: 18px;
+  width: 40px;
+}
+.fileInput {
+  width: 100%;
+  height: 37px;
+  padding: 6px 20px !important;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-sizing: border-box;
+  background-color: gainsboro !important;
+  color: black !important;
+  font-size: 18px !important;
+}
+.countInput {
+  min-width: 50px;
+  height: 30px;
+  text-align: center;
+  margin: -2px 0;
+  /* display: inline-block; */
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-sizing: border-box;
+  background-color: gainsboro !important;
+}
+#normal {
+  color: green;
+  font-size: 18px;
+}
+#abnormal {
+  color: red;
+  font-size: 18px;
+}
+#stage-parent {
+  position: relative;
+  padding-top: 10px;
+}
+
+#noimg {
+  width: 100px;
+  height: 100px;
+
+  position: fixed;
+  top: 40%;
+  left: 50%;
+}
+.ant-modal {
+  width: 70%;
+  transform-origin: 85px 43px;
+  overflow: hidden;
+}
+.pdfdown {
+  position: fixed;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 1000;
+}
+.sidebyside {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  justify-items: center;
+  grid-gap: 40px;
+  width: 100%;
+}
+.blankpdf {
+  height: 550px;
+  width: 405px;
+  border: solid 1px black;
+}
+.downloadvisible {
+  visibility: visible;
+}
+.downloadhidden {
+  visibility: hidden;
+}
+.downloadshow {
+  display: block;
+}
+.downloadhide {
+  display: none;
+}
+.confirmBtn {
+  display: grid;
+  grid-template-columns: 2fr 50px 50px;
+  justify-items: end;
+  grid-gap: 2px;
+}
+.bttn {
+  background-color: rgb(245, 245, 245);
+  color: rgb(0, 165, 65);
+}
+.bttnclicked {
+  background-color: rgb(0, 160, 65);
+  color: rgb(255, 255, 255);
+}
+.bttndisable {
+  background-color: rgb(245, 245, 245);
+  color: rgb(180, 180, 180);
+}
+.ant-popover {
+  z-index: 100000 !important;
+}
+.cursoractive {
+  cursor: crosshair;
+}
