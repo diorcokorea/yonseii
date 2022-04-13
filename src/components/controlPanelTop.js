@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { globalVariable } from "../actions";
-import { Button, Space, Popover } from "antd";
+import { Button, Space, Popover, Modal } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
 import "antd/dist/antd.css";
 import "../css/spin.css";
 import $ from "jquery";
@@ -30,7 +31,12 @@ const ImageForm = () => {
   const [showspin2, setShowspin2] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
-
+  const [serverurl, setServerurl] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  useEffect(() => {
+    const url = localStorage.getItem("serverurl");
+    if (url) setServerurl(url);
+  }, []);
   useEffect(() => {
     dispatch(
       globalVariable({
@@ -130,8 +136,10 @@ const ImageForm = () => {
     });
   };
   function reading(type) {
+    let svr = localStorage.getItem("serverurl");
+    if (!svr | (svr === "")) svr = process.env.REACT_APP_SERVER;
     $.ajax({
-      url: `${process.env.REACT_APP_SERVER}/reading`,
+      url: `${svr}/reading`,
       type: "POST",
       dataType: "json",
       contentType: "application/json; charset=utf-8",
@@ -168,6 +176,7 @@ const ImageForm = () => {
       },
     });
   }
+
   return (
     <>
       <div className="menutop">
@@ -195,7 +204,35 @@ const ImageForm = () => {
               placeholder="파일을 추가해주세요"
             ></input>
           </div>
+          <Button
+            type="text"
+            title="custom server url"
+            onClick={() => setIsModalVisible(true)}
+            icon={<SettingOutlined style={{ fontSize: 25 }} />}
+          />
         </Space>
+        <Modal
+          title="Server Setting"
+          visible={isModalVisible}
+          onOk={() => {
+            localStorage.setItem("serverurl", serverurl);
+            setIsModalVisible(false);
+          }}
+          onCancel={() => setIsModalVisible(false)}
+        >
+          <form>
+            <label className="label">URL:</label>
+            <input
+              className="input"
+              placeholder="server url"
+              value={serverurl}
+              onChange={(e) => {
+                setServerurl(e.target.value);
+              }}
+            />
+          </form>
+          <span>ex) http://192.168.0.30:8080</span>
+        </Modal>
         <div
           style={{
             textAlign: "right",

@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: yonseireact
-    image: diorcokorea/yonseireact
+    container_name: yonseireact_lab
+    image: diorcokorea/yonseireact_lab
     volumes:
       - ./src:/app/src
     ports:

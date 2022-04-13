@@ -60,7 +60,7 @@ body {
   border-bottom: solid 1px #d9d9d9;
 }
 .resultnumber {
-  margin: 17px 0 0 20px;
+  margin: 22px 0 0 20px;
   display: grid;
   grid-template-columns: 80px 1fr 80px 1fr;
   justify-items: stretch;
@@ -68,7 +68,8 @@ body {
 }
 .img_responsive {
   width: 100%;
-  padding: 0 0 5px 3px;
+  padding: 0 0 8px 0px;
+
   margin-top: -10px;
 }
 .hideitem {
@@ -126,7 +127,7 @@ li:hover {
 #srccontainer {
   display: none;
 }
-.contextmenu {
+.contextmenu ul {
   font-size: 14px;
   background-color: #fff;
   border-radius: 2px;
@@ -142,16 +143,17 @@ li:hover {
   box-shadow: 0 0 20px 0 #ccc;
   opacity: 1;
   transition: opacity 0.5s linear;
-}
 
-.contextmenu ul {
   list-style: none;
   margin: 0;
 }
-.contextmenu li {
-  border-bottom: 1px solid #fff;
+.contextmenu ul li {
   padding: 7px;
   margin-right: 5px;
+}
+
+.contextmenu ul li:not(:last-child) {
+  border-bottom: 1px solid #ccc;
 }
 .contextmenu li:hover {
   background-color: #ccc;
@@ -229,7 +231,7 @@ li:hover {
 }
 .upload-label label {
   margin-left: 10px;
-  font-size: 16px;
+  font-size: 18px;
 }
 .upload-label > input[type="text"] {
   clear: both;
@@ -260,11 +262,11 @@ li:hover {
   box-sizing: border-box;
   background-color: gainsboro !important;
   color: black !important;
-  font-size: 16px !important;
+  font-size: 18px !important;
 }
 .countInput {
   min-width: 50px;
-  height: 27px;
+  height: 30px;
   text-align: center;
   margin: -2px 0;
   /* display: inline-block; */
@@ -275,9 +277,11 @@ li:hover {
 }
 #normal {
   color: green;
+  font-size: 18px;
 }
 #abnormal {
   color: red;
+  font-size: 18px;
 }
 #stage-parent {
   position: relative;

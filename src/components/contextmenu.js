@@ -21,9 +21,8 @@ const ContextMenu = ({ position, contextClick, type }) => {
       break;
   }
   return (
-    <div>
+    <div className="contextmenu">
       <ul
-        className="contextmenu"
         style={{
           top: position?.y,
           left: position?.x,

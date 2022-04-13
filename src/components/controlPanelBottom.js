@@ -19,7 +19,7 @@ import bgscale1 from "../images/ruler.jpg";
 import { MdDownload } from "react-icons/md";
 
 import moment from "moment";
-
+var getimgname = (imgname) => imgname.substring(0, imgname.lastIndexOf("."));
 const ImageForm = () => {
   const dispatch = useDispatch();
   const scale = useSelector((state) => state.global.scale);
@@ -43,8 +43,8 @@ const ImageForm = () => {
   const [pdfStable, setPdfStable] = useState(false);
   const [pdfUnstable, setPdfUnstable] = useState(false);
   const [plustype, setPlustype] = useState(false);
-  const [pdfinput, setPdfinput] = useState({});
-  const [pdfimsi, setPdfimsi] = useState({});
+  const [pdfinput, setPdfinput] = useState();
+  const [pdfimsi, setPdfimsi] = useState();
   const [btndisabled1, setBtndisabled1] = useState(true);
   const [btndisabled2, setBtndisabled2] = useState(true);
   const [visible1, setVisible1] = useState(false);
@@ -133,7 +133,6 @@ const ImageForm = () => {
         break;
     }
     dispatch(globalVariable({ triggerpdf: true }));
-    console.log(newpdf);
     setPdfimsi(newpdf);
   }
 
@@ -175,13 +174,13 @@ const ImageForm = () => {
     });
   };
   const drawBox = () => {
-    const maxnum = counting?.normal + counting?.abnormal;
-    if (maxnum >= 46) openNotification();
-    else {
-      setPlustype(!plustype);
-      dispatch(globalVariable({ draggable: plustype }));
-      dispatch(globalVariable({ fillcolor: null }));
-    }
+    //const maxnum = counting?.normal + counting?.abnormal;
+    // if (maxnum >= 46) openNotification();
+    //else {
+    setPlustype(!plustype);
+    dispatch(globalVariable({ draggable: plustype }));
+    dispatch(globalVariable({ fillcolor: null }));
+    //}
   };
 
   const checkInput = () => {
@@ -209,15 +208,19 @@ const ImageForm = () => {
         day: "2-digit",
       })
       .replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2");
-    let inputval = {
-      ...pdfinput,
-      readtype,
-      normal: counting.normal,
-      abnormal: counting.abnormal,
-    };
-    if (!inputval.name)
-      inputval = { ...inputval, name: imgname && imgname.split(".")[0] };
-    if (!inputval.date) inputval = { ...inputval, date: datestring };
+    let inputval;
+
+    if (pdfinput?.name) inputval = pdfinput;
+    else {
+      inputval = {
+        name: imgname && getimgname(imgname),
+        readtype,
+        normal: counting.normal,
+        abnormal: counting.abnormal,
+        date: datestring,
+      };
+    }
+
     setPdfinput(inputval);
     setPdfimsi(inputval);
   };
@@ -295,7 +298,7 @@ const ImageForm = () => {
   const modalReportBtn = (
     <PDFDownloadLink
       document={<PdfRender img={thumbpdf} {...pdfinput} />}
-      fileName={`${pdfinput.name}.pdf`}
+      fileName={`${pdfinput?.name}.pdf`}
     >
       {({ blob, url, loading, error }) => {
         return (
@@ -310,7 +313,7 @@ const ImageForm = () => {
 
   const modalSettingBtn = (
     <>
-      {!pdfimsi.name ? (
+      {!pdfimsi?.name ? (
         <Popover content={checkInput()} trigger="click">
           <button type="button" className="btn rounded-pill">
             확인
@@ -323,6 +326,7 @@ const ImageForm = () => {
           data-toggle="modal"
           data-target="#pdfreport"
           onClick={() => {
+            console.log(pdfinput, pdfimsi);
             let newpdf = { ...pdfinput, ...pdfimsi };
             if (!pdfimsi.normal) delete newpdf.normal;
             if (!pdfimsi.abnormal) delete newpdf.abnormal;
@@ -363,7 +367,7 @@ const ImageForm = () => {
             >
               <GiHamburgerMenu style={{ marginRight: 5 }} />
 
-              {pdfinput.name}
+              {pdfinput?.name}
             </h6>
             <div style={{ position: "absolute", top: 22, right: 60 }}>
               {modalReportBtn}
@@ -423,15 +427,16 @@ const ImageForm = () => {
           <div className="title">
             <label>확대</label>
           </div>
-          <div>
-            <Slider
-              min={0}
-              max={100}
-              tooltipVisible={false}
-              onChange={(value) => sliderChange(value)}
-              value={sidetype === "nude" ? scaleorigin : scale}
-            />
-
+          <div style={{ maxWidth: 400, minWidth: 250 }}>
+            <div style={{ paddingRight: 3, marginLeft: -5 }}>
+              <Slider
+                min={0}
+                max={100}
+                tooltipVisible={false}
+                onChange={(value) => sliderChange(value)}
+                value={sidetype === "nude" ? scaleorigin : scale}
+              />
+            </div>
             <img src={bgscale} alt="" className="img_responsive" />
           </div>
         </Space>
@@ -471,7 +476,7 @@ const ImageForm = () => {
           />
         </div>
         <div className={sidetype === "nude" && "hideitem"}>
-          <Space style={{ width: "100%", marginTop: 7 }}>
+          <Space style={{ width: "100%", marginTop: 16 }}>
             <Button
               size="large"
               title="마우스드래그로 Box를 추가할수 있습니다."
@@ -567,7 +572,7 @@ const ImageForm = () => {
 
         <div
           className={sidetype === "nude" && "hideitem"}
-          style={{ marginTop: 7 }}
+          style={{ marginTop: 16 }}
         >
           <button
             type="button"

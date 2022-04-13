@@ -638,10 +638,15 @@ const DrawAnnotations = (props) => {
     ref.setAttrs(transform.decompose());
   };
   const handleDragStart = (e) => {
-    setShow(false);
-    setDragPoint(e.target.getStage().getPointerPosition());
+    if (show) {
+      setShow(false);
+      setDragPoint(e.target.getStage().getPointerPosition());
+    } else {
+      setDragPoint(null);
+    }
   };
   const handleDragEnd = (e) => {
+    if (!dragPoint) return;
     setShow(true);
     const endPoint = e.target.getStage().getPointerPosition();
     const move = { x: dragPoint.x - endPoint.x, y: dragPoint.y - endPoint.y };

@@ -33,7 +33,7 @@
   "scripts": {
     "start": "set PORT=3003 && craco start",
     "build": "craco build",
-    "winBuild": "set \"GENERATE_SOURCEMAP=false\" && set NODE_OPTIONS= --max_old_space_size=32768 && craco build",
+    "winBuild": "set \"GENERATE_SOURCEMAP=false\" && set NODE_OPTIONS= --max_old_space_size=92768 && craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
