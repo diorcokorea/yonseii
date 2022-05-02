@@ -328,6 +328,10 @@ const ImageForm = () => {
           onClick={() => {
             console.log(pdfinput, pdfimsi);
             let newpdf = { ...pdfinput, ...pdfimsi };
+            newpdf.normal = counting.normal;
+            newpdf.abnormal = counting.abnormal;
+            newpdf.readtype = readtype;
+
             if (!pdfimsi.normal) delete newpdf.normal;
             if (!pdfimsi.abnormal) delete newpdf.abnormal;
             setPdfinput(newpdf);
@@ -428,7 +432,7 @@ const ImageForm = () => {
             <label>확대</label>
           </div>
           <div style={{ maxWidth: 400, minWidth: 250 }}>
-            <div style={{ paddingRight: 3, marginLeft: -5 }}>
+            <div>
               <Slider
                 min={0}
                 max={100}

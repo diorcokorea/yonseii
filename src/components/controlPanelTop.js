@@ -34,8 +34,12 @@ const ImageForm = () => {
   const [serverurl, setServerurl] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   useEffect(() => {
-    const url = localStorage.getItem("serverurl");
-    if (url) setServerurl(url);
+    let url = localStorage.getItem("serverurl");
+    if (!url) {
+      url = "http://localhost:8080";
+      localStorage.setItem("serverurl", url);
+    }
+    setServerurl(url);
   }, []);
   useEffect(() => {
     dispatch(
@@ -74,6 +78,7 @@ const ImageForm = () => {
     img.onload = function () {
       getBase64(e.target.files[0]).then((data) => {
         const dt = _.cloneDeep(data);
+        console.log(data);
         dispatch(globalVariable({ sidetype: "nude" }));
         dispatch(globalVariable({ imgname: e.target.files[0].name }));
         dispatch(globalVariable({ originimg: dt }));
@@ -154,6 +159,7 @@ const ImageForm = () => {
 
           const rtn = countGene(result_json);
           const resultwithid = addRect(result_json.results);
+
           dispatch(
             globalVariable({
               counting: { normal: rtn.normal, abnormal: rtn.abnormal },
@@ -186,7 +192,7 @@ const ImageForm = () => {
             id="upload"
             name="myfile"
             hidden
-            accept=".png,.jpg,.jpeg,.gif"
+            accept=".png,.jpg,.svg,.jpeg,.gif,.tif,.tiff,.bmp"
             onChange={fileUpload}
           />
           <label className="uploadimg" for="upload">
@@ -208,7 +214,9 @@ const ImageForm = () => {
             type="text"
             title="custom server url"
             onClick={() => setIsModalVisible(true)}
-            icon={<SettingOutlined style={{ fontSize: 25 }} />}
+            icon={
+              <SettingOutlined style={{ fontSize: 25, color: "transparent" }} />
+            }
           />
         </Space>
         <Modal
